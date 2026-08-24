@@ -11,8 +11,10 @@ import 'package:ashgledger/viewmodel/member_viewmodel.dart';
 import 'package:ashgledger/viewmodel/meeting_viewmodel.dart';
 import 'package:ashgledger/viewmodel/member_processing_viewmodel.dart';
 import 'package:ashgledger/viewmodel/dashboard_viewmodel.dart';
+import 'package:ashgledger/viewmodel/reports_viewmodel.dart';
 import 'package:ashgledger/views/auth/login_screen.dart';
 import 'package:ashgledger/views/main_navigation_screen.dart';
+import 'package:ashgledger/views/member_portal/member_portal_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,7 @@ class AiswaryaLedgerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<MeetingViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<MemberProcessingViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<DashboardViewModel>()),
+        ChangeNotifierProvider(create: (_) => sl<ReportsViewModel>()),
       ],
       child: Selector<LanguageViewModel, Locale>(
         selector: (_, vm) => vm.locale,
@@ -67,7 +70,11 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final storage = sl<StorageService>();
     if (storage.hasSession()) {
-      return const MainNavigationScreen();
+      if (storage.isAdmin()) {
+        return const MainNavigationScreen();
+      } else {
+        return const MemberPortalScreen();
+      }
     }
     return LoginScreen();
   }

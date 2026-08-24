@@ -1,3 +1,4 @@
+import 'package:ashgledger/core/model/completed_meeting_register_model.dart';
 import 'package:ashgledger/core/network/api_client.dart';
 import 'package:ashgledger/core/network/api_endpoints.dart';
 import 'package:ashgledger/core/model/meeting_model.dart';
@@ -50,6 +51,15 @@ class MeetingRepository {
       method: RequestType.post,
     );
     return MeetingModel.fromJson(response['data']);
+  }
+
+  
+  Future<CompletedMeetingRegisterModel> getMeetingRegisterBook(int meetingId) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.meetingRegisterBook(meetingId),
+      method: RequestType.get,
+    );
+    return CompletedMeetingRegisterModel.fromJson(response['data']);
   }
 
   Future<List<MeetingMemberModel>> getMeetingMembers(int meetingId) async {

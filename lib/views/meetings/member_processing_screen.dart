@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ashgledger/core/theme/app_colors.dart';
 import 'package:ashgledger/core/common/common_error_widget.dart';
 import 'package:ashgledger/core/common/app_snackbar.dart';
+import 'package:ashgledger/core/common/app_shimmer.dart';
+import 'package:ashgledger/core/localization/app_localizations.dart';
 import 'package:ashgledger/viewmodel/member_processing_viewmodel.dart';
 import 'package:ashgledger/core/model/member_processing_data_model.dart';
 
@@ -27,158 +29,608 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
   final _finePaymentCtrl = TextEditingController();
   final _financialAidPaymentCtrl = TextEditingController();
   final _monthlyContributionCtrl = TextEditingController();
+  final Map<int, TextEditingController> _specialLoanCtrls = {};
+
+  TextEditingController _getSpecialLoanCtrl(int typeId) {
+    return _specialLoanCtrls.putIfAbsent(typeId, () {
+      final c = TextEditingController();
+      c.addListener(_onFieldChanged);
+      return c;
+    });
+  }
   final _notesCtrl = TextEditingController();
+  // ignore: prefer_final_fields
+  DateTime _selectedTransactionDate = DateTime.now();
+  // ignore: prefer_final_fields
+  bool _isEditMode = false;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    _loanRepaymentCtrl.addListener(_onFieldChanged);
+    _depositAdditionCtrl.addListener(_onFieldChanged);
+    _finePaymentCtrl.addListener(_onFieldChanged);
+    _financialAidPaymentCtrl.addListener(_onFieldChanged);
+    _monthlyContributionCtrl.addListener(_onFieldChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MemberProcessingViewModel>().fetchProcessingForm(widget.meetingId, widget.memberId);
+      context.read<MemberProcessingViewModel>().fetchProcessingForm(
+        widget.meetingId,
+        widget.memberId,
+      );
     });
+  }
+
+  void _onFieldChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _loanRepaymentCtrl.removeListener(_onFieldChanged);
+    _depositAdditionCtrl.removeListener(_onFieldChanged);
+    _finePaymentCtrl.removeListener(_onFieldChanged);
+    _financialAidPaymentCtrl.removeListener(_onFieldChanged);
+    _monthlyContributionCtrl.removeListener(_onFieldChanged);
+
     _loanRepaymentCtrl.dispose();
     _depositAdditionCtrl.dispose();
     _finePaymentCtrl.dispose();
     _financialAidPaymentCtrl.dispose();
     _monthlyContributionCtrl.dispose();
+    for (var c in _specialLoanCtrls.values) {
+      c.dispose();
+    }
     _notesCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Member Collection Form'),
-      ),
+      appBar: AppBar(title: Text(l10n.translate('member_collection_form'))),
       body: Consumer<MemberProcessingViewModel>(
         builder: (context, vm, _) {
-          if (vm.loadState.isLoading) return const Center(child: CircularProgressIndicator());
+          if (vm.loadState.isLoading) {
+            return const MemberProcessingShimmerLoading();
+          }
           if (vm.loadState.hasError) {
             return CommonErrorWidget(
               message: vm.loadState.message ?? 'Failed to load form',
-              onRetry: () => vm.fetchProcessingForm(widget.meetingId, widget.memberId),
+              onRetry: () =>
+                  vm.fetchProcessingForm(widget.meetingId, widget.memberId),
             );
           }
 
           final data = vm.formData;
           if (data == null) return const SizedBox.shrink();
 
+          if (data.processingStatus == 'COMPLETED' && !_isInitialized) {
+            _isInitialized = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                if (data.lastLoanRepayment > 0) _loanRepaymentCtrl.text = data.lastLoanRepayment.toStringAsFixed(2);
+                if (data.lastDepositAddition > 0) _depositAdditionCtrl.text = data.lastDepositAddition.toStringAsFixed(2);
+                if (data.lastFinePayment > 0) _finePaymentCtrl.text = data.lastFinePayment.toStringAsFixed(2);
+                if (data.lastMonthlyContributionAddition > 0) _monthlyContributionCtrl.text = data.lastMonthlyContributionAddition.toStringAsFixed(2);
+                if (data.lastFinancialAidPayment > 0) _financialAidPaymentCtrl.text = data.lastFinancialAidPayment.toStringAsFixed(2);
+                if (data.lastNotes != null) _notesCtrl.text = data.lastNotes!;
+
+                for (var spl in data.specialLoanBalances) {
+                  if (spl.lastRepaymentAmount > 0) {
+                    _getSpecialLoanCtrl(spl.specialLoanTypeId).text = spl.lastRepaymentAmount.toStringAsFixed(2);
+                  }
+                }
+              }
+            });
+          }
+
+          final isCompleted = data.processingStatus == 'COMPLETED';
+          final isReadOnly = isCompleted && !_isEditMode;
+          final isMl = l10n.locale.languageCode == 'ml';
+
+          // Base balances BEFORE this meeting's payment was applied
+          final baseLoan = isCompleted ? (data.loanRemaining + data.lastLoanRepayment) : data.loanRemaining;
+          final baseDeposit = isCompleted ? (data.depositCurrent - data.lastDepositAddition) : data.depositCurrent;
+          final baseFine = isCompleted ? (data.fineRemaining + data.lastFinePayment) : data.fineRemaining;
+          final baseAid = isCompleted ? (data.financialAidRemaining + data.lastFinancialAidPayment) : data.financialAidRemaining;
+          final baseContribution = isCompleted ? (data.monthlyContributionCurrent - data.lastMonthlyContributionAddition) : data.monthlyContributionCurrent;
+
+          // Calculate entered amounts live
+          final loanRepayment = double.tryParse(_loanRepaymentCtrl.text) ?? 0.0;
+          final depositAddition =
+              double.tryParse(_depositAdditionCtrl.text) ?? 0.0;
+          final finePayment = double.tryParse(_finePaymentCtrl.text) ?? 0.0;
+          final financialAidPayment =
+              double.tryParse(_financialAidPaymentCtrl.text) ?? 0.0;
+          final monthlyContribution =
+              double.tryParse(_monthlyContributionCtrl.text) ?? 0.0;
+
+          // Calculate updated total previews
+          final updatedLoan = baseLoan - loanRepayment;
+          final updatedDeposit = baseDeposit + depositAddition;
+          final updatedFine = baseFine - finePayment;
+          final updatedAid = baseAid - financialAidPayment;
+          final updatedContribution = baseContribution + monthlyContribution;
+
+          double totalSpecialLoans = 0.0;
+          for (var entry in data.specialLoanBalances) {
+            final c = _specialLoanCtrls[entry.specialLoanTypeId];
+            if (c != null) {
+              totalSpecialLoans += double.tryParse(c.text) ?? 0.0;
+            }
+          }
+
+          final totalCollectionToday = totalSpecialLoans +
+              loanRepayment +
+              depositAddition +
+              finePayment +
+              financialAidPayment +
+              monthlyContribution;
+
+          final updatedLoanText = loanRepayment > 0
+              ? (isMl
+                    ? 'പുതിയ വായ്പാ ബാക്കി: ₹${updatedLoan.toStringAsFixed(2)}'
+                    : 'Updated Loan Total: ₹${updatedLoan.toStringAsFixed(2)}')
+              : null;
+
+          final updatedDepositText = depositAddition > 0
+              ? (isMl
+                    ? 'പുതിയ നിക്ഷേപം: ₹${updatedDeposit.toStringAsFixed(2)}'
+                    : 'Updated Deposit Total: ₹${updatedDeposit.toStringAsFixed(2)}')
+              : null;
+
+          final updatedFineText = finePayment > 0
+              ? (isMl
+                    ? 'പുതിയ പിഴ അടവ്: ₹${updatedFine.toStringAsFixed(2)}'
+                    : 'Updated Fine Total: ₹${updatedFine.toStringAsFixed(2)}')
+              : null;
+
+          final updatedAidText = financialAidPayment > 0
+              ? (isMl
+                    ? 'പുതിയ സഹായ അടവ്: ₹${updatedAid.toStringAsFixed(2)}'
+                    : 'Updated Aid Total: ₹${updatedAid.toStringAsFixed(2)}')
+              : null;
+
+          final updatedContributionText = monthlyContribution > 0
+              ? (isMl
+                    ? 'പുതിയ ആകെ വിഹിതം: ₹${updatedContribution.toStringAsFixed(2)}'
+                    : 'Updated Contribution Total: ₹${updatedContribution.toStringAsFixed(2)}')
+              : null;
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildMemberBanner(data),
+                _buildMemberBanner(data, l10n),
+                if (isCompleted && !_isEditMode) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isMl ? 'അടവ് പൂർത്തിയായി' : 'Payment Completed',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 14),
+                              ),
+                              Text(
+                                isMl ? 'ഈ യോഗത്തിലെ അടവ് രേഖപ്പെടുത്തിയിട്ടുണ്ട്.' : 'Member payment recorded for this meeting.',
+                                style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (isCompleted && _isEditMode) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit_rounded, color: Colors.orange, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isMl ? 'അടവ് തിരുത്തുന്നു... സമർപ്പിക്കുമ്പോൾ മുൻ അടവുകൾ റദ്ദാക്കപ്പെടും.' : 'Editing payment. Submitting will update the payment entries.',
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.orange.shade900, fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
-                if (data.interestCalculationRequired && !data.interestCalculated)
-                  _buildInterestRequiredWarning(data),
+                if (data.interestCalculationRequired &&
+                    !data.interestCalculated)
+                  _buildInterestRequiredWarning(data, l10n),
                 const SizedBox(height: 20),
-                Text('Financial Collection Entries', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                Text(
+                  l10n.translate('financial_collection_entries'),
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
                 const SizedBox(height: 14),
+                if (data.interestCalculated)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.accountInterest.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.accountInterest.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.calculate_rounded,
+                          size: 24,
+                          color: AppColors.accountInterest,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${l10n.translate('calculated_interest_title')} (${data.activeInterestPeriod ?? "Period"})',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '₹${data.calculatedInterestAmount.toStringAsFixed(2)}',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.accountInterest,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accountInterest.withValues(
+                              alpha: 0.18,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            l10n.translate('added_to_loan'),
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.accountInterest,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                 _buildInputField(
-                  title: 'Loan Repayment (₹)',
+                  title: l10n.translate('loan_repayment'),
                   controller: _loanRepaymentCtrl,
                   color: AppColors.accountLoan,
-                  badgeText: 'Bal: ₹${data.loanRemaining.toStringAsFixed(2)}',
+                  badgeText:
+                      '${l10n.translate('bal')}: ₹${baseLoan.toStringAsFixed(2)}',
                   badgeColor: AppColors.accountLoan,
                   badgeIcon: Icons.account_balance_wallet_rounded,
+                  updatedText: updatedLoanText,
+                  readOnly: isReadOnly,
                   suffixIcon: IconButton(
-                    icon: const Icon(Icons.arrow_circle_down_rounded, color: AppColors.accountLoan),
-                    tooltip: 'Pay Full Loan',
+                    icon: const Icon(
+                      Icons.arrow_circle_down_rounded,
+                      color: AppColors.accountLoan,
+                    ),
+                    tooltip: l10n.translate('pay_full_loan'),
                     onPressed: () {
-                      _loanRepaymentCtrl.text = data.loanRemaining.toStringAsFixed(2);
+                      _loanRepaymentCtrl.text = baseLoan.toStringAsFixed(2);
                     },
                   ),
                 ),
 
+                ...data.specialLoanBalances.map((spl) {
+                  final ctrl = _getSpecialLoanCtrl(spl.specialLoanTypeId);
+                  final splPayment = double.tryParse(ctrl.text) ?? 0.0;
+                  final baseSplBal = isCompleted ? (spl.currentBalance + spl.lastRepaymentAmount) : spl.currentBalance;
+                  final updatedSplBal = baseSplBal - splPayment;
+                  final updatedSplText = splPayment > 0
+                      ? (isMl
+                          ? 'പുതിയ ബാക്കി തുക: ₹${updatedSplBal.toStringAsFixed(2)}'
+                          : 'Updated Balance: ₹${updatedSplBal.toStringAsFixed(2)}')
+                      : null;
+
+                  return _buildInputField(
+                    title: '${spl.specialLoanTypeName} ${l10n.locale.languageCode == 'ml' ? 'അടവ്' : 'Repayment'}',
+                    controller: ctrl,
+                    color: Colors.deepOrange,
+                    badgeText: '${l10n.locale.languageCode == 'ml' ? 'ബാക്കി' : 'Bal'}: ₹${baseSplBal.toStringAsFixed(2)}',
+                    badgeColor: Colors.deepOrange,
+                    badgeIcon: Icons.card_giftcard_rounded,
+                    updatedText: updatedSplText,
+                    readOnly: isReadOnly,
+                    suffixIcon: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_circle_down_rounded,
+                        color: Colors.deepOrange,
+                      ),
+                      onPressed: () {
+                        ctrl.text = baseSplBal.toStringAsFixed(2);
+                      },
+                    ),
+                  );
+                }),
+
                 _buildInputField(
-                  title: 'Savings Deposit Addition (₹)',
+                  title: l10n.translate('deposit_addition'),
                   controller: _depositAdditionCtrl,
                   color: AppColors.accountDeposit,
-                  badgeText: 'Current: ₹${data.depositCurrent.toStringAsFixed(2)}',
+                  badgeText:
+                      '${l10n.translate('current')}: ₹${baseDeposit.toStringAsFixed(2)}',
                   badgeColor: AppColors.accountDeposit,
                   badgeIcon: Icons.savings_rounded,
+                  updatedText: updatedDepositText,
+                  readOnly: isReadOnly,
                 ),
 
                 _buildInputField(
-                  title: 'Fine Payment (₹)',
+                  title: l10n.translate('fine_payment'),
                   controller: _finePaymentCtrl,
                   color: AppColors.accountFine,
-                  badgeText: 'Due: ₹${data.fineRemaining.toStringAsFixed(2)}',
+                  badgeText:
+                      '${l10n.translate('due')}: ₹${baseFine.toStringAsFixed(2)}',
                   badgeColor: AppColors.accountFine,
                   badgeIcon: Icons.gavel_rounded,
+                  updatedText: updatedFineText,
+                  readOnly: isReadOnly,
                 ),
 
                 _buildInputField(
-                  title: 'Financial Aid Payment (₹)',
+                  title: l10n.translate('aid_payment'),
                   controller: _financialAidPaymentCtrl,
                   color: AppColors.accountFinancialAid,
-                  badgeText: 'Due: ₹${data.financialAidRemaining.toStringAsFixed(2)}',
+                  badgeText:
+                      '${l10n.translate('due')}: ₹${baseAid.toStringAsFixed(2)}',
                   badgeColor: AppColors.accountFinancialAid,
                   badgeIcon: Icons.volunteer_activism_rounded,
+                  updatedText: updatedAidText,
+                  readOnly: isReadOnly,
                 ),
 
                 _buildInputField(
-                  title: 'Monthly Contribution Addition (₹)',
+                  title: l10n.translate('contribution_addition'),
                   controller: _monthlyContributionCtrl,
                   color: AppColors.accountContribution,
-                  badgeText: 'Total: ₹${data.monthlyContributionCurrent.toStringAsFixed(2)}',
+                  badgeText:
+                      '${l10n.translate('total')}: ₹${baseContribution.toStringAsFixed(2)}',
                   badgeColor: AppColors.accountContribution,
                   badgeIcon: Icons.calendar_today_rounded,
+                  updatedText: updatedContributionText,
+                  readOnly: isReadOnly,
                 ),
 
                 TextField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes / Remarks (Optional)',
-                    prefixIcon: Icon(Icons.note_alt_rounded),
+                  decoration: InputDecoration(
+                    labelText: l10n.translate('notes_remarks'),
+                    prefixIcon: const Icon(Icons.note_alt_rounded),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                if (totalCollectionToday > 0)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
                     ),
-                    onPressed: vm.submitState.isLoading
-                        ? null
-                        : () async {
-                            final success = await vm.submitProcessing(
-                              meetingId: widget.meetingId,
-                              memberId: widget.memberId,
-                              loanRepayment: double.tryParse(_loanRepaymentCtrl.text) ?? 0.0,
-                              interestPayment: 0.0,
-                              depositAddition: double.tryParse(_depositAdditionCtrl.text) ?? 0.0,
-                              finePayment: double.tryParse(_finePaymentCtrl.text) ?? 0.0,
-                              financialAidPayment: double.tryParse(_financialAidPaymentCtrl.text) ?? 0.0,
-                              monthlyContributionAddition: double.tryParse(_monthlyContributionCtrl.text) ?? 0.0,
-                              notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-                            );
-
-                            if (context.mounted) {
-                              if (success) {
-                                AppSnackbar.showSuccess(context, 'Member processing recorded successfully!');
-                                Navigator.pop(context);
-                              } else {
-                                AppSnackbar.showError(context, vm.submitState.message ?? 'Submission failed');
-                              }
-                            }
-                          },
-                    child: vm.submitState.isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text('Submit Collections', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          l10n.locale.languageCode == 'ml'
+                              ? 'ഇന്നത്തെ ആകെ ശേഖരണം'
+                              : 'Total Collection Today',
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryDark,
+                          ),
+                        ),
+                        Text(
+                          '₹${totalCollectionToday.toStringAsFixed(2)}',
+                          style: GoogleFonts.outfit(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryDark,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+
+                const SizedBox(height: 16),
+              ],
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: Consumer<MemberProcessingViewModel>(
+        builder: (context, vm, _) {
+          if (vm.loadState.isLoading || vm.formData == null) return const SizedBox.shrink();
+          final data = vm.formData!;
+          final isCompleted = data.processingStatus == 'COMPLETED';
+          final isMl = l10n.locale.languageCode == 'ml';
+
+          final buttonColor = isCompleted && !_isEditMode
+              ? Colors.orange.shade800
+              : AppColors.primary;
+
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
                 ),
               ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: buttonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: vm.submitState.isLoading
+                      ? null
+                      : () async {
+                          if (isCompleted && !_isEditMode) {
+                            setState(() {
+                              _isEditMode = true;
+                            });
+                            return;
+                          }
+
+                          final interestPeriodToUse = data.activeInterestPeriod ??
+                              (data.pendingInterestPeriods.isNotEmpty ? data.pendingInterestPeriods.first : null);
+
+                          final success = await vm.submitProcessing(
+                            meetingId: widget.meetingId,
+                            memberId: widget.memberId,
+                            loanRepayment:
+                                double.tryParse(_loanRepaymentCtrl.text) ?? 0.0,
+                            interestPayment: 0.0,
+                            depositAddition:
+                                double.tryParse(_depositAdditionCtrl.text) ?? 0.0,
+                            finePayment:
+                                double.tryParse(_finePaymentCtrl.text) ?? 0.0,
+                            financialAidPayment:
+                                double.tryParse(
+                                  _financialAidPaymentCtrl.text,
+                                ) ?? 0.0,
+                            monthlyContributionAddition:
+                                double.tryParse(
+                                  _monthlyContributionCtrl.text,
+                                ) ?? 0.0,
+                            specialLoanRepayments: data.specialLoanBalances.map((spl) {
+                                final c = _specialLoanCtrls[spl.specialLoanTypeId];
+                                final amt = c != null ? (double.tryParse(c.text) ?? 0.0) : 0.0;
+                                return {
+                                  'specialLoanTypeId': spl.specialLoanTypeId,
+                                  'amount': amt,
+                                };
+                              }).where((e) => (e['amount'] as double) > 0).toList(),
+                              notes: _notesCtrl.text.trim().isEmpty
+                                ? null
+                                : _notesCtrl.text.trim(),
+                            transactionDate: _selectedTransactionDate
+                                .toIso8601String()
+                                .split("T")[0],
+                            isUpdate: isCompleted,
+                            interestPeriod: interestPeriodToUse,
+                          );
+
+                          if (context.mounted) {
+                            if (success) {
+                              AppSnackbar.showSuccess(
+                                context,
+                                isCompleted
+                                    ? (isMl ? 'അടവുകൾ വിജയകരമായി പുതുക്കി!' : 'Payment updated successfully!')
+                                    : (vm.submitState.message ?? 'Member payment recorded successfully'),
+                              );
+                              Navigator.pop(context, true);
+                            } else {
+                              AppSnackbar.showError(
+                                context,
+                                vm.submitState.message ?? 'Submission failed',
+                              );
+                            }
+                          }
+                        },
+                  child: vm.submitState.isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isCompleted
+                                  ? (_isEditMode ? Icons.save_rounded : Icons.edit_note_rounded)
+                                  : Icons.check_circle_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isCompleted
+                                  ? (_isEditMode
+                                      ? (isMl ? 'പുതുക്കിയ അടവുകൾ സമർപ്പിക്കുക' : 'Submit Updated Payment')
+                                      : (isMl ? 'അടവ് പുതുക്കുക / തിരുത്തുക' : 'Update / Edit Payment'))
+                                  : l10n.translate('submit_payments'),
+                              style: GoogleFonts.outfit(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
             ),
           );
         },
@@ -186,7 +638,16 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
     );
   }
 
-  Widget _buildMemberBanner(MemberProcessingDataModel data) {
+  Widget _buildMemberBanner(
+    MemberProcessingDataModel data,
+    AppLocalizations l10n,
+  ) {
+    final statusKey = 'status_${data.processingStatus.toLowerCase()}';
+    final translatedStatus = l10n.translate(statusKey);
+    final statusText = (translatedStatus != statusKey)
+        ? translatedStatus
+        : data.processingStatus;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -199,16 +660,35 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
           CircleAvatar(
             radius: 24,
             backgroundColor: AppColors.primary,
-            child: Text(data.memberNumber, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+            child: Text(
+              data.memberNumber,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(data.fullName, style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                Text(
+                  data.fullName,
+                  style: GoogleFonts.outfit(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text('Processing Status: ${data.processingStatus}', style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
+                Text(
+                  '${l10n.translate('processing_status')}: $statusText',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -217,9 +697,15 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
     );
   }
 
-  Widget _buildInterestRequiredWarning(MemberProcessingDataModel data) {
-    final periodText = data.activeInterestPeriod ??
-        (data.pendingInterestPeriods.isNotEmpty ? data.pendingInterestPeriods.join(", ") : "current period");
+  Widget _buildInterestRequiredWarning(
+    MemberProcessingDataModel data,
+    AppLocalizations l10n,
+  ) {
+    final periodText =
+        data.activeInterestPeriod ??
+        (data.pendingInterestPeriods.isNotEmpty
+            ? data.pendingInterestPeriods.join(", ")
+            : "current period");
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -234,12 +720,23 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 22),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.warning,
+                size: 22,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Interest calculation required for period $periodText before processing repayments.',
-                  style: GoogleFonts.outfit(fontSize: 13, color: AppColors.textDark, fontWeight: FontWeight.w500, height: 1.3),
+                  l10n.locale.languageCode == 'ml'
+                      ? '$periodText കാലയളവിലേക്ക് തിരിച്ചടവ് രേഖപ്പെടുത്തുന്നതിന് മുൻപ് പലിശ കണക്കാക്കണം.'
+                      : 'Interest calculation required for period $periodText before processing repayments.',
+                  style: GoogleFonts.outfit(
+                    fontSize: 13,
+                    color: AppColors.textDark,
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                  ),
                 ),
               ),
             ],
@@ -247,21 +744,89 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryDark,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              icon: const Icon(Icons.calculate_rounded, size: 18),
-              label: Text('Calculate Interest', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13)),
-              onPressed: () => _showInterestDialog(context, data),
+            child: Selector<MemberProcessingViewModel, bool>(
+              selector: (_, vm) => vm.submitState.isLoading,
+              builder: (context, isLoading, _) {
+                return ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryDark,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.calculate_rounded, size: 18),
+                  label: Text(
+                    isLoading
+                        ? l10n.translate('calculating')
+                        : l10n.translate('calculate_interest_button'),
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  onPressed: isLoading
+                      ? null
+                      : () => _calculateInterestDirectly(context, data, l10n),
+                );
+              },
             ),
-          )
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _calculateInterestDirectly(
+    BuildContext context,
+    MemberProcessingDataModel data,
+    AppLocalizations l10n,
+  ) async {
+    final period =
+        data.activeInterestPeriod ??
+        (data.pendingInterestPeriods.isNotEmpty
+            ? data.pendingInterestPeriods.first
+            : '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}');
+
+    final success = await context
+        .read<MemberProcessingViewModel>()
+        .calculateInterest(
+          widget.memberId,
+          period,
+          meetingId: widget.meetingId,
+        );
+
+    if (context.mounted) {
+      if (success) {
+        final successMsg = l10n.locale.languageCode == 'ml'
+            ? '$period കാലയളവിലേക്ക് 1% പലിശ കണക്കാക്കി വായ്പയിൽ ചേർത്തു!'
+            : '1% Interest calculated & added to loan balance for $period!';
+        AppSnackbar.showSuccess(context, successMsg);
+        context.read<MemberProcessingViewModel>().fetchProcessingForm(
+          widget.meetingId,
+          widget.memberId,
+        );
+      } else {
+        AppSnackbar.showError(
+          context,
+          context.read<MemberProcessingViewModel>().submitState.message ??
+              'Calculation failed',
+        );
+      }
+    }
   }
 
   Widget _buildInputField({
@@ -272,6 +837,8 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
     Color? badgeColor,
     IconData? badgeIcon,
     Widget? suffixIcon,
+    String? updatedText,
+    bool readOnly = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -283,55 +850,53 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
             children: [
               Text(
                 title,
-                style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark),
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
               ),
               if (badgeText != null)
-                Flexible(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: (badgeColor ?? color).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: (badgeColor ?? color).withValues(alpha: 0.25)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (badgeIcon != null) ...[
-                          Icon(badgeIcon, size: 12, color: badgeColor ?? color),
-                          const SizedBox(width: 4),
-                        ],
-                        Flexible(
-                          child: Text(
-                            badgeText,
-                            style: GoogleFonts.outfit(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: badgeColor ?? color,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: (badgeColor ?? color).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      if (badgeIcon != null) ...[
+                        Icon(badgeIcon, size: 13, color: badgeColor ?? color),
+                        const SizedBox(width: 4),
                       ],
-                    ),
+                      Text(
+                        badgeText,
+                        style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: badgeColor ?? color,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           TextField(
             controller: controller,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+            readOnly: readOnly,
+            enabled: !readOnly,
+            style: GoogleFonts.outfit(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
             decoration: InputDecoration(
-              hintText: '0.00',
-              prefixIcon: Icon(Icons.payments_rounded, color: color),
               suffixIcon: suffixIcon,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.borderLight),
-              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppColors.divider),
@@ -342,77 +907,30 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showInterestDialog(BuildContext context, MemberProcessingDataModel data) {
-    final defaultPeriod = data.activeInterestPeriod ??
-        (data.pendingInterestPeriods.isNotEmpty
-            ? data.pendingInterestPeriods.first
-            : '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}');
-    final periodCtrl = TextEditingController(text: defaultPeriod);
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Calculate 1% Interest', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Calculate 1% monthly interest for ${data.fullName}. Calculated interest will be added directly to the loan balance.',
-              style: GoogleFonts.outfit(fontSize: 13, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: periodCtrl,
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
-              decoration: const InputDecoration(
-                labelText: 'Interest Period (YYYY-MM)',
-                prefixIcon: Icon(Icons.calendar_month_rounded, color: AppColors.primary),
+          if (updatedText != null && updatedText.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.trending_flat_rounded,
+                    size: 16,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    updatedText,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel', style: GoogleFonts.outfit(color: AppColors.primary)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryDark,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () async {
-              final period = periodCtrl.text.trim();
-              if (period.isEmpty) return;
-              Navigator.pop(dialogContext);
-
-              final success = await context.read<MemberProcessingViewModel>().calculateInterest(
-                    widget.memberId,
-                    period,
-                    meetingId: widget.meetingId,
-                  );
-              if (context.mounted) {
-                if (success) {
-                  AppSnackbar.showSuccess(context, 'Interest calculated & added to loan balance for $period!');
-                  context.read<MemberProcessingViewModel>().fetchProcessingForm(widget.meetingId, widget.memberId);
-                } else {
-                  AppSnackbar.showError(
-                    context,
-                    context.read<MemberProcessingViewModel>().submitState.message ?? 'Calculation failed',
-                  );
-                }
-              }
-            },
-            child: Text('Calculate', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-          ),
         ],
       ),
     );

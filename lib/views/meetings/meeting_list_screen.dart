@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ashgledger/core/theme/app_colors.dart';
-import 'package:ashgledger/core/state/load_state.dart';
 import 'package:ashgledger/core/common/common_error_widget.dart';
 import 'package:ashgledger/core/common/app_snackbar.dart';
 import 'package:ashgledger/viewmodel/meeting_viewmodel.dart';
 import 'package:ashgledger/core/model/meeting_model.dart';
 import 'meeting_detail_screen.dart';
 import 'schedule_meeting_dialog.dart';
-import '../../core/localization/app_localizations.dart';
+import 'package:ashgledger/core/common/app_shimmer.dart';
+import 'package:ashgledger/core/localization/app_localizations.dart';
 
 class MeetingListScreen extends StatelessWidget {
   const MeetingListScreen({super.key});
@@ -23,70 +23,64 @@ class MeetingListScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      body: Selector<MeetingViewModel, LoadState>(
-        selector: (_, vm) => vm.loadState,
-        builder: (context, state, _) {
-          if (state.isLoading) return const Center(child: CircularProgressIndicator());
-          if (state.hasError) {
+      body: Consumer<MeetingViewModel>(
+        builder: (context, vm, _) {
+          if (vm.loadState.isLoading) return const MeetingsListShimmerLoading();
+          if (vm.loadState.hasError) {
             return CommonErrorWidget(
-              message: state.message ?? 'Failed to load meetings',
-              onRetry: () => context.read<MeetingViewModel>().fetchMeetings(),
+              message: vm.loadState.message ?? 'Failed to load meetings',
+              onRetry: () => vm.fetchMeetings(),
             );
           }
 
-          return Selector<MeetingViewModel, List<MeetingModel>>(
-            selector: (_, vm) => vm.meetings,
-            builder: (context, meetings, _) {
-              final activeUncompleted = context.read<MeetingViewModel>().currentUncompletedMeeting;
+          final meetings = vm.meetings;
+          final activeUncompleted = vm.currentUncompletedMeeting;
 
-              if (meetings.isEmpty) {
-                return Center(child: Text(l10n.translate('no_meetings')));
-              }
+          if (meetings.isEmpty) {
+            return Center(child: Text(l10n.translate('no_meetings'), style: GoogleFonts.outfit(fontSize: 16, color: AppColors.textSecondary)));
+          }
 
-              // Display newest meeting first (descending by meetingDate / meetingNumber)
-              final sortedMeetings = List<MeetingModel>.from(meetings)
-                ..sort((a, b) {
-                  final dateCmp = b.meetingDate.compareTo(a.meetingDate);
-                  if (dateCmp != 0) return dateCmp;
-                  return b.meetingNumber.compareTo(a.meetingNumber);
-                });
+          final sortedMeetings = List<MeetingModel>.from(meetings)
+            ..sort((a, b) {
+              final dateCmp = b.meetingDate.compareTo(a.meetingDate);
+              if (dateCmp != 0) return dateCmp;
+              return b.meetingNumber.compareTo(a.meetingNumber);
+            });
 
-              return RefreshIndicator(
-                onRefresh: () => context.read<MeetingViewModel>().fetchMeetings(),
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (activeUncompleted != null) _buildActiveMeetingNotice(activeUncompleted),
-                    ...sortedMeetings.map((m) => _buildMeetingCard(context, m, l10n)),
-                  ],
-                ),
-              );
-            },
+          return RefreshIndicator(
+            onRefresh: () => context.read<MeetingViewModel>().fetchMeetings(),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (activeUncompleted != null) _buildActiveMeetingNotice(activeUncompleted, l10n),
+                ...sortedMeetings.map((m) => _buildMeetingCard(context, m, l10n)),
+              ],
+            ),
           );
         },
       ),
-
       floatingActionButton: Selector<MeetingViewModel, bool>(
         selector: (_, vm) => vm.hasUncompletedMeeting,
         builder: (context, hasUncompleted, _) {
           return FloatingActionButton.extended(
+            heroTag: 'meetings_list_fab',
             onPressed: () {
               final vm = context.read<MeetingViewModel>();
               final uncompleted = vm.currentUncompletedMeeting;
               if (uncompleted != null) {
                 AppSnackbar.showInfo(
                   context,
-                  'Meeting #${uncompleted.meetingNumber} is currently ${uncompleted.status}. Please complete it before scheduling another.',
+                  l10n.translate('active_meeting_notice'),
                 );
               } else {
-                showDialog(context: context, builder: (_) => ScheduleMeetingDialog());
+                showDialog(context: context, builder: (_) => const ScheduleMeetingDialog());
               }
             },
-            backgroundColor: hasUncompleted ? Colors.grey : AppColors.primary,
-            icon: Icon(hasUncompleted ? Icons.lock_outline_rounded : Icons.add_task_rounded, color: Colors.white),
+            backgroundColor: hasUncompleted ? Colors.grey.shade600 : AppColors.primary,
+            icon: Icon(hasUncompleted ? Icons.lock_rounded : Icons.add_task_rounded, color: Colors.white),
             label: Text(
-              hasUncompleted ? 'Meeting Active' : 'Schedule Meeting',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+              hasUncompleted ? l10n.translate('meeting_active') : l10n.translate('schedule_meeting'),
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
             ),
           );
         },
@@ -94,23 +88,30 @@ class MeetingListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActiveMeetingNotice(MeetingModel active) {
+  Widget _buildActiveMeetingNotice(MeetingModel active, AppLocalizations l10n) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.info.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.info),
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline_rounded, color: AppColors.info),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 20),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Active Meeting #${active.meetingNumber} (${active.meetingDate}) is ${active.status}. Complete it to unlock new meeting scheduling.',
-              style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textDark),
+              l10n.translate('active_meeting_notice'),
+              style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
             ),
           ),
         ],
@@ -120,102 +121,155 @@ class MeetingListScreen extends StatelessWidget {
 
   Widget _buildMeetingCard(BuildContext context, MeetingModel meeting, AppLocalizations l10n) {
     final bool isActive = meeting.status == 'OPEN' || meeting.status == 'SCHEDULED';
-    Color statusColor = AppColors.info;
+    Color statusColor = AppColors.accentGold;
     if (meeting.status == 'OPEN') statusColor = AppColors.success;
     if (meeting.status == 'COMPLETED') statusColor = AppColors.textSecondary;
     final statusText = l10n.translate('status_${meeting.status.toLowerCase()}');
 
-    return Card(
+    final double progress = meeting.totalMembers > 0 ? (meeting.processedMembers / meeting.totalMembers) : 0;
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: isActive ? 4 : 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: isActive
-            ? BorderSide(color: AppColors.primary.withValues(alpha: 0.6), width: 1.8)
-            : BorderSide(color: AppColors.divider.withValues(alpha: 0.5), width: 1),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isActive ? AppColors.primary.withValues(alpha: 0.5) : AppColors.borderLight,
+          width: isActive ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isActive ? 0.06 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          )
+        ],
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => MeetingDetailScreen(meetingId: meeting.id)),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${l10n.translate('meetings')} #${meeting.meetingNumber} - ${meeting.meetingDate}',
-                      style: GoogleFonts.outfit(
-                        fontSize: isActive ? 17 : 15,
-                        fontWeight: isActive ? FontWeight.w900 : FontWeight.w500,
-                        color: isActive ? AppColors.primaryDark : AppColors.textSecondary,
-                        letterSpacing: isActive ? 0.3 : 0,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => MeetingDetailScreen(meetingId: meeting.id)),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      statusText,
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
+                      child: Icon(
+                        isActive ? Icons.event_available_rounded : Icons.event_note_rounded,
                         color: statusColor,
+                        size: 20,
                       ),
                     ),
-                  )
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (meeting.isFirstMeetingOfMonth)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.accentGold.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'First Meeting of Month',
-                    style: GoogleFonts.outfit(
-                      fontSize: 11,
-                      fontWeight: isActive ? FontWeight.w900 : FontWeight.bold,
-                      color: AppColors.primaryDark,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${l10n.translate('meetings')} #${meeting.meetingNumber}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          Text(
+                            '${l10n.translate('date')}: ${meeting.meetingDate}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (meeting.isFirstMeetingOfMonth) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentGold.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      l10n.translate('first_meeting_of_month'),
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${meeting.processedMembers}/${meeting.totalMembers} ${l10n.translate('members')}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          l10n.translate('workspace'),
+                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.primary),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: AppColors.bgLight,
+                    color: AppColors.primary,
+                    minHeight: 5,
                   ),
                 ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${meeting.processedMembers}/${meeting.totalMembers} ${l10n.translate('members')}',
-                    style: GoogleFonts.outfit(
-                      fontSize: 13,
-                      fontWeight: isActive ? FontWeight.w800 : FontWeight.w400,
-                      color: isActive ? AppColors.textDark : AppColors.textMuted,
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: isActive ? AppColors.primary : AppColors.textMuted,
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

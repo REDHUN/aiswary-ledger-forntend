@@ -16,6 +16,7 @@ class MemberProcessingRepository {
   }
 
   Future<void> processMember({
+    bool isUpdate = false,
     required int meetingId,
     required int memberId,
     required double loanRepayment,
@@ -25,11 +26,14 @@ class MemberProcessingRepository {
     required double financialAidPayment,
     required double monthlyContributionAddition,
     String? notes,
+    List<Map<String, dynamic>>? specialLoanRepayments,
+    String? transactionDate,
+    String? interestPeriod,
     required String idempotencyKey,
   }) async {
     await _apiClient.request(
-      path: ApiEndpoints.processMember(meetingId, memberId),
-      method: RequestType.post,
+      path: ApiEndpoints.processMember(meetingId, memberId, isUpdate: isUpdate),
+      method: isUpdate ? RequestType.put : RequestType.post,
       headers: {'X-Idempotency-Key': idempotencyKey},
       body: {
         'loanRepayment': loanRepayment,
@@ -38,7 +42,11 @@ class MemberProcessingRepository {
         'finePayment': finePayment,
         'financialAidPayment': financialAidPayment,
         'monthlyContributionAddition': monthlyContributionAddition,
+        'specialLoanRepayments': specialLoanRepayments,
         'notes': notes,
+        'isUpdate': isUpdate,
+        'transactionDate': ?transactionDate,
+        'interestPeriod': ?interestPeriod,
       },
     );
   }

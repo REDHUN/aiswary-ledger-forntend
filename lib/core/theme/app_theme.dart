@@ -36,6 +36,11 @@ class AppTheme {
           color: Colors.white,
         ),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.bgCard,
         elevation: 2,
@@ -72,6 +77,28 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold),
         ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        height: 68,
+        indicatorColor: AppColors.primary.withValues(alpha: 0.14),
+        indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryDark,
+            );
+          }
+          return GoogleFonts.outfit(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          );
+        }),
       ),
     );
   }

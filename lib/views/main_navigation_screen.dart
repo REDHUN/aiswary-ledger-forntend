@@ -1,3 +1,8 @@
+import '../viewmodel/dashboard_viewmodel.dart';
+import '../viewmodel/member_viewmodel.dart';
+import '../viewmodel/meeting_viewmodel.dart';
+import 'reports/reports_screen.dart';
+import 'settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme/app_colors.dart';
@@ -26,6 +31,26 @@ class MainNavigationScreen extends StatelessWidget {
           appBar: AppBar(
             title: Text(l10n.translate('app_title')),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.settings_rounded),
+                tooltip: 'Settings',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.analytics_rounded),
+                tooltip: l10n.locale.languageCode == 'ml' ? 'റിപ്പോർട്ടുകൾ' : 'Reports',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                  );
+                },
+              ),
               PopupMenuButton<String>(
                 icon: const Icon(Icons.language_rounded),
                 tooltip: l10n.translate('language'),
@@ -78,27 +103,51 @@ class MainNavigationScreen extends StatelessWidget {
               MeetingListScreen(),
             ],
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: currentIndex,
-            onDestinationSelected: (index) => _currentIndexNotifier.value = index,
-            indicatorColor: AppColors.primary.withValues(alpha: 0.15),
-            destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.dashboard_outlined),
-                selectedIcon: const Icon(Icons.dashboard_rounded, color: AppColors.primary),
-                label: l10n.dashboard,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.people_outline_rounded),
-                selectedIcon: const Icon(Icons.people_rounded, color: AppColors.primary),
-                label: l10n.members,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.event_note_outlined),
-                selectedIcon: const Icon(Icons.event_note_rounded, color: AppColors.primary),
-                label: l10n.meetings,
-              ),
-            ],
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: const Border(top: BorderSide(color: AppColors.borderLight)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            child: NavigationBar(
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                _currentIndexNotifier.value = index;
+                if (index == 0) {
+                  context.read<DashboardViewModel>().fetchDashboardSummary();
+                } else if (index == 1) {
+                  context.read<MemberViewModel>().fetchMembers();
+                } else if (index == 2) {
+                  context.read<MeetingViewModel>().fetchMeetings();
+                }
+              },
+              backgroundColor: Colors.white,
+              indicatorColor: AppColors.primary.withValues(alpha: 0.14),
+              elevation: 0,
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.grid_view_outlined, color: AppColors.textSecondary),
+                  selectedIcon: const Icon(Icons.grid_view_rounded, color: AppColors.primaryDark),
+                  label: l10n.dashboard,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.group_outlined, color: AppColors.textSecondary),
+                  selectedIcon: const Icon(Icons.group_rounded, color: AppColors.primaryDark),
+                  label: l10n.members,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.event_note_outlined, color: AppColors.textSecondary),
+                  selectedIcon: const Icon(Icons.event_available_rounded, color: AppColors.primaryDark),
+                  label: l10n.meetings,
+                ),
+              ],
+            ),
           ),
         );
       },

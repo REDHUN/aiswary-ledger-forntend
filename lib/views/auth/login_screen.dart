@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/common/app_snackbar.dart';
 import '../../viewmodel/auth_viewmodel.dart';
 import '../main_navigation_screen.dart';
+import '../member_portal/member_portal_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController(text: 'admin');
@@ -92,10 +93,17 @@ class LoginScreen extends StatelessWidget {
                                       if (context.mounted) {
                                         if (success) {
                                           AppSnackbar.showSuccess(context, 'Welcome ${authVm.username}!');
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-                                          );
+                                          if (authVm.isAdmin) {
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+                                            );
+                                          } else {
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(builder: (_) => const MemberPortalScreen()),
+                                            );
+                                          }
                                         } else {
                                           AppSnackbar.showError(
                                             context,

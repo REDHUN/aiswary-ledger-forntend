@@ -9,9 +9,9 @@ class MemberRepository {
 
   MemberRepository(this._apiClient);
 
-  Future<List<MemberModel>> getMembers({int page = 0, int size = 50}) async {
+  Future<List<MemberModel>> getMembers({int page = 0, int size = 100, String? query}) async {
     final response = await _apiClient.request(
-      path: '${ApiEndpoints.members}?page=$page&size=$size',
+      path: ApiEndpoints.members(page: page, size: size, query: query),
       method: RequestType.get,
     );
 
@@ -35,7 +35,7 @@ class MemberRepository {
     String? joiningDate,
   }) async {
     final response = await _apiClient.request(
-      path: ApiEndpoints.members,
+      path: ApiEndpoints.membersPath,
       method: RequestType.post,
       body: {
         'memberNumber': memberNumber,
@@ -46,6 +46,26 @@ class MemberRepository {
         'address': address,
         'joiningDate': joiningDate,
       },
+    );
+    return MemberModel.fromJson(response['data']);
+  }
+
+  Future<MemberModel> updateMember(
+    int id, {
+    String? fullName,
+    String? phone,
+    String? address,
+    bool? isActive,
+  }) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.memberDetails(id),
+      method: RequestType.put,
+      body: {
+        'fullName': fullName,
+        'phone': phone,
+        'address': address,
+        'isActive': isActive,
+      }..removeWhere((key, value) => value == null),
     );
     return MemberModel.fromJson(response['data']);
   }
@@ -83,20 +103,22 @@ class MemberRepository {
     return rawList.map((t) => FinancialTransactionModel.fromJson(t)).toList();
   }
 
-  Future<void> issueLoan(int memberId, double amount, {int? meetingId, String? description}) async {
+  Future<void> issueLoan(int memberId, double amount, {int? meetingId, int? specialLoanTypeId, String? description, String? transactionDate}) async {
     await _apiClient.request(
       path: ApiEndpoints.memberLoans(memberId),
       method: RequestType.post,
       body: {
         'amount': amount,
         'meetingId': meetingId,
+        'specialLoanTypeId': specialLoanTypeId,
         'description': description,
+        'transactionDate': transactionDate,
       },
     );
   }
 
 
-  Future<void> addDeposit(int memberId, double amount, {int? meetingId, String? description}) async {
+  Future<void> addDeposit(int memberId, double amount, {int? meetingId, String? description, String? transactionDate}) async {
     await _apiClient.request(
       path: ApiEndpoints.memberDeposits(memberId),
       method: RequestType.post,
@@ -104,12 +126,13 @@ class MemberRepository {
         'amount': amount,
         'meetingId': meetingId,
         'description': description,
+        'transactionDate': transactionDate,
       },
     );
   }
 
 
-  Future<void> addFine(int memberId, double amount, {int? meetingId, String? description}) async {
+  Future<void> addFine(int memberId, double amount, {int? meetingId, String? description, String? transactionDate}) async {
     await _apiClient.request(
       path: ApiEndpoints.memberFines(memberId),
       method: RequestType.post,
@@ -117,7 +140,7 @@ class MemberRepository {
     );
   }
 
-  Future<void> addContribution(int memberId, double amount, {int? meetingId, String? description}) async {
+  Future<void> addContribution(int memberId, double amount, {int? meetingId, String? description, String? transactionDate}) async {
     await _apiClient.request(
       path: ApiEndpoints.memberContributions(memberId),
       method: RequestType.post,
@@ -125,7 +148,7 @@ class MemberRepository {
     );
   }
 
-  Future<void> addFinancialAid(int memberId, double amount, {int? meetingId, String? description}) async {
+  Future<void> addFinancialAid(int memberId, double amount, {int? meetingId, String? description, String? transactionDate}) async {
     await _apiClient.request(
       path: ApiEndpoints.memberFinancialAid(memberId),
       method: RequestType.post,
@@ -141,6 +164,14 @@ class MemberRepository {
         'interestPeriod': interestPeriod,
         'meetingId': meetingId,
       },
+    );
+  }
+
+  Future<void> reverseTransaction(int txId, String reason) async {
+    await _apiClient.request(
+      path: ApiEndpoints.reverseTransaction(txId),
+      method: RequestType.post,
+      body: {'reason': reason},
     );
   }
 }

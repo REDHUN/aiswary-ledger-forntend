@@ -1,0 +1,61 @@
+import '../model/meeting_report_model.dart';
+import '../model/monthly_ledger_report_model.dart';
+import '../network/api_client.dart';
+import '../network/api_endpoints.dart';
+import '../model/financial_report_model.dart';
+import '../model/member_balance_report_model.dart';
+
+class ReportsRepository {
+  Future<MonthlyLedgerReportModel> getMonthlyLedgerReport(String yearMonth) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.reportMonthlyLedger(yearMonth),
+      method: RequestType.get,
+    );
+    return MonthlyLedgerReportModel.fromJson(response['data']);
+  }
+
+  Future<List<MeetingReportModel>> getAllMeetingReports() async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.reportMeetingsList,
+      method: RequestType.get,
+    );
+    final data = response['data'] as List? ?? [];
+    return data.map((x) => MeetingReportModel.fromJson(x)).toList();
+  }
+
+  Future<MeetingReportModel> getMeetingReport(int meetingId) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.reportMeetingDetails(meetingId),
+      method: RequestType.get,
+    );
+    return MeetingReportModel.fromJson(response['data']);
+  }
+  final ApiClient _apiClient;
+
+  ReportsRepository(this._apiClient);
+
+  Future<FinancialReportModel> getFinancialSummary() async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.reportSummary,
+      method: RequestType.get,
+    );
+    return FinancialReportModel.fromJson(response['data']);
+  }
+
+  Future<FinancialReportModel> getPeriodReport({String? startDate, String? endDate}) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.reportPeriod(startDate, endDate),
+      method: RequestType.get,
+    );
+    return FinancialReportModel.fromJson(response['data']);
+  }
+
+  Future<List<MemberBalanceReportModel>> getMemberBalancesReport() async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.reportMemberBalances,
+      method: RequestType.get,
+    );
+    final data = response['data'] as List? ?? [];
+    return data.map((x) => MemberBalanceReportModel.fromJson(x)).toList();
+  }
+}

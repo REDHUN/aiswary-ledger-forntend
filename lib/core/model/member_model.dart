@@ -1,3 +1,5 @@
+import 'member_account_model.dart';
+
 class MemberModel {
   final int id;
   final String memberNumber;
@@ -6,6 +8,23 @@ class MemberModel {
   final String? address;
   final bool isActive;
   final String? joiningDate;
+  final List<MemberAccountModel> accounts;
+
+  double get loanBalance => getAccountBalance('LOAN');
+  double get depositBalance => getAccountBalance('DEPOSIT');
+  double get monthlyContributionBalance => getAccountBalance('MONTHLY_CONTRIBUTION');
+  double get fineBalance => getAccountBalance('FINE');
+  double get financialAidBalance => getAccountBalance('FINANCIAL_AID');
+  double get interestBalance => getAccountBalance('INTEREST');
+
+  double getAccountBalance(String type) {
+    try {
+      final acc = accounts.firstWhere((a) => a.accountType == type);
+      return acc.currentBalance;
+    } catch (_) {
+      return 0.0;
+    }
+  }
 
   MemberModel({
     required this.id,
@@ -15,9 +34,13 @@ class MemberModel {
     this.address,
     required this.isActive,
     this.joiningDate,
+    this.accounts = const [],
   });
 
   factory MemberModel.fromJson(Map<String, dynamic> json) {
+    final accList = (json['accounts'] as List? ?? [])
+        .map((x) => MemberAccountModel.fromJson(x as Map<String, dynamic>))
+        .toList();
     return MemberModel(
       id: json['id'] ?? 0,
       memberNumber: json['memberNumber'] ?? '',
@@ -26,6 +49,7 @@ class MemberModel {
       address: json['address'],
       isActive: json['isActive'] ?? true,
       joiningDate: json['joiningDate'],
+      accounts: accList,
     );
   }
 }

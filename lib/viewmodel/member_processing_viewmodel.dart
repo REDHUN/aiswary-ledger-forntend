@@ -37,6 +37,10 @@ class MemberProcessingViewModel extends ChangeNotifier {
     required double financialAidPayment,
     required double monthlyContributionAddition,
     String? notes,
+    List<Map<String, dynamic>>? specialLoanRepayments,
+    String? transactionDate,
+    bool isUpdate = false,
+    String? interestPeriod,
   }) async {
     submitState.loading();
     notifyListeners();
@@ -53,7 +57,11 @@ class MemberProcessingViewModel extends ChangeNotifier {
         finePayment: finePayment,
         financialAidPayment: financialAidPayment,
         monthlyContributionAddition: monthlyContributionAddition,
+        specialLoanRepayments: specialLoanRepayments,
         notes: notes,
+        transactionDate: transactionDate,
+        interestPeriod: interestPeriod,
+        isUpdate: isUpdate,
         idempotencyKey: idempotencyKey,
       );
       submitState.success("Member payments processed successfully!");
