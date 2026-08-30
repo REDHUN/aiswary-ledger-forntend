@@ -16,12 +16,16 @@ class SettingsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateSurplusAmount(double amount) async {
+  Future<bool> updateSurplusAmount(double amount, {String? description, int? meetingId}) async {
     loadState.loading();
     notifyListeners();
 
     try {
-      _surplusAmount = await _settingsRepository.updateSurplusAmount(amount);
+      _surplusAmount = await _settingsRepository.updateSurplusAmount(
+        amount,
+        description: description,
+        meetingId: meetingId,
+      );
       loadState.success("Surplus amount updated successfully");
       return true;
     } catch (e) {

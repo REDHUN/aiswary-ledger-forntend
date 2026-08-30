@@ -1,3 +1,23 @@
+class SpecialLoanBalanceItemModel {
+  final int? specialLoanTypeId;
+  final String specialLoanTypeName;
+  final double currentBalance;
+
+  SpecialLoanBalanceItemModel({
+    this.specialLoanTypeId,
+    required this.specialLoanTypeName,
+    required this.currentBalance,
+  });
+
+  factory SpecialLoanBalanceItemModel.fromJson(Map<String, dynamic> json) {
+    return SpecialLoanBalanceItemModel(
+      specialLoanTypeId: (json['specialLoanTypeId'] as num?)?.toInt(),
+      specialLoanTypeName: json['specialLoanTypeName'] ?? 'Special Loan',
+      currentBalance: (json['currentBalance'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
 class MemberBalanceReportModel {
   final int memberId;
   final String memberNumber;
@@ -5,6 +25,8 @@ class MemberBalanceReportModel {
   final String? phone;
   final bool isActive;
   final double loanBalance;
+  final double specialLoanBalance;
+  final List<SpecialLoanBalanceItemModel> specialLoanBalances;
   final double depositBalance;
   final double fineBalance;
   final double contributionBalance;
@@ -18,6 +40,8 @@ class MemberBalanceReportModel {
     this.phone,
     required this.isActive,
     required this.loanBalance,
+    required this.specialLoanBalance,
+    required this.specialLoanBalances,
     required this.depositBalance,
     required this.fineBalance,
     required this.contributionBalance,
@@ -25,9 +49,13 @@ class MemberBalanceReportModel {
     required this.interestBalance,
   });
 
-  double get netBalance => (depositBalance + contributionBalance) - (loanBalance + fineBalance + financialAidBalance + interestBalance);
+  double get netBalance => (depositBalance + contributionBalance) - (loanBalance + specialLoanBalance + fineBalance + financialAidBalance + interestBalance);
 
   factory MemberBalanceReportModel.fromJson(Map<String, dynamic> json) {
+    final splList = (json['specialLoanBalances'] as List? ?? [])
+        .map((x) => SpecialLoanBalanceItemModel.fromJson(x as Map<String, dynamic>))
+        .toList();
+
     return MemberBalanceReportModel(
       memberId: (json['memberId'] as num?)?.toInt() ?? 0,
       memberNumber: json['memberNumber'] ?? '',
@@ -35,6 +63,8 @@ class MemberBalanceReportModel {
       phone: json['phone'],
       isActive: json['isActive'] ?? true,
       loanBalance: (json['loanBalance'] as num?)?.toDouble() ?? 0.0,
+      specialLoanBalance: (json['specialLoanBalance'] as num?)?.toDouble() ?? 0.0,
+      specialLoanBalances: splList,
       depositBalance: (json['depositBalance'] as num?)?.toDouble() ?? 0.0,
       fineBalance: (json['fineBalance'] as num?)?.toDouble() ?? 0.0,
       contributionBalance: (json['contributionBalance'] as num?)?.toDouble() ?? 0.0,

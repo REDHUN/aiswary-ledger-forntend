@@ -76,6 +76,7 @@ class GroupViewModel extends ChangeNotifier {
 
   Future<bool> issueGroupLoan({
     int? groupId,
+    int? meetingId,
     required List<int> memberIds,
     int? specialLoanTypeId,
     required double totalAmount,
@@ -88,6 +89,7 @@ class GroupViewModel extends ChangeNotifier {
     try {
       await _groupRepository.issueGroupLoan(
         groupId: groupId,
+        meetingId: meetingId,
         memberIds: memberIds,
         specialLoanTypeId: specialLoanTypeId,
         totalAmount: totalAmount,

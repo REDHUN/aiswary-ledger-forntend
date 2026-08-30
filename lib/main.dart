@@ -1,3 +1,4 @@
+import 'package:ashgledger/viewmodel/group_profit_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -36,6 +37,7 @@ class AiswaryaLedgerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<MemberProcessingViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<DashboardViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<ReportsViewModel>()),
+        ChangeNotifierProvider(create: (_) => sl<GroupProfitViewModel>()),
       ],
       child: Selector<LanguageViewModel, Locale>(
         selector: (_, vm) => vm.locale,

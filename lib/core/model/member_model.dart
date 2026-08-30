@@ -11,6 +11,7 @@ class MemberModel {
   final List<MemberAccountModel> accounts;
 
   double get loanBalance => getAccountBalance('LOAN');
+  double get specialLoanBalance => getAccountBalance('SPECIAL_LOAN');
   double get depositBalance => getAccountBalance('DEPOSIT');
   double get monthlyContributionBalance => getAccountBalance('MONTHLY_CONTRIBUTION');
   double get fineBalance => getAccountBalance('FINE');

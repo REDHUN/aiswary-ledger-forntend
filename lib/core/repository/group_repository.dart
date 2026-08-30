@@ -72,6 +72,7 @@ class GroupRepository {
 
   Future<GroupLoanSummaryModel> issueGroupLoan({
     int? groupId,
+    int? meetingId,
     required List<int> memberIds,
     int? specialLoanTypeId,
     required double totalAmount,
@@ -83,6 +84,7 @@ class GroupRepository {
       method: RequestType.post,
       body: {
         'groupId': groupId,
+        'meetingId': meetingId,
         'memberIds': memberIds,
         'specialLoanTypeId': specialLoanTypeId,
         'totalAmount': totalAmount,

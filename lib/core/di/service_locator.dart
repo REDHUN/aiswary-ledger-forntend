@@ -1,3 +1,5 @@
+import '../repository/group_profit_repository.dart';
+import '../../viewmodel/group_profit_viewmodel.dart';
 import 'package:ashgledger/core/repository/expense_repository.dart';
 import 'package:ashgledger/viewmodel/expense_viewmodel.dart';
 import 'package:get_it/get_it.dart';
@@ -35,6 +37,7 @@ Future<void> setupLocator() async {
 
   // Repositories
   sl.registerLazySingleton(() => ExpenseRepository(sl()));
+  sl.registerLazySingleton(() => GroupProfitRepository(sl()));
   sl.registerLazySingleton<AuthRepository>(() => AuthRepository(sl<ApiClient>(), sl<StorageService>()));
   sl.registerLazySingleton<MemberRepository>(() => MemberRepository(sl<ApiClient>()));
   sl.registerLazySingleton<MeetingRepository>(() => MeetingRepository(sl<ApiClient>()));
@@ -46,6 +49,7 @@ Future<void> setupLocator() async {
 
   // ViewModels
   sl.registerFactory(() => ExpenseViewModel(sl()));
+  sl.registerFactory(() => GroupProfitViewModel(sl()));
   sl.registerLazySingleton<LanguageViewModel>(() => LanguageViewModel(sl<StorageService>()));
   sl.registerFactory<AuthViewModel>(() => AuthViewModel(sl<AuthRepository>()));
   sl.registerFactory<MemberViewModel>(() => MemberViewModel(sl<MemberRepository>()));

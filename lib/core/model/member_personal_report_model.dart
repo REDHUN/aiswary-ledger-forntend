@@ -6,6 +6,7 @@ class MemberPersonalReportModel {
   final List<String> availableMonths;
   final double totalDeposits;
   final double totalLoanRepaid;
+  final double totalSpecialLoanRepaid;
   final double currentLoanBalance;
   final double currentDepositBalance;
   final double totalMonthlyContributions;
@@ -22,6 +23,7 @@ class MemberPersonalReportModel {
     required this.availableMonths,
     required this.totalDeposits,
     required this.totalLoanRepaid,
+    required this.totalSpecialLoanRepaid,
     required this.currentLoanBalance,
     required this.currentDepositBalance,
     required this.totalMonthlyContributions,
@@ -45,6 +47,7 @@ class MemberPersonalReportModel {
       availableMonths: availList,
       totalDeposits: (json['totalDeposits'] ?? 0.0).toDouble(),
       totalLoanRepaid: (json['totalLoanRepaid'] ?? 0.0).toDouble(),
+      totalSpecialLoanRepaid: (json['totalSpecialLoanRepaid'] ?? 0.0).toDouble(),
       currentLoanBalance: (json['currentLoanBalance'] ?? 0.0).toDouble(),
       currentDepositBalance: (json['currentDepositBalance'] ?? 0.0).toDouble(),
       totalMonthlyContributions: (json['totalMonthlyContributions'] ?? 0.0).toDouble(),
@@ -61,6 +64,8 @@ class MemberMeetingPaymentEntryModel {
   final int meetingNumber;
   final String meetingDate;
   final double loanRepayment;
+  final double specialLoanRepayment;
+  final String? specialLoanTypeName;
   final double depositAddition;
   final double finePayment;
   final double contributionAddition;
@@ -72,6 +77,8 @@ class MemberMeetingPaymentEntryModel {
     required this.meetingNumber,
     required this.meetingDate,
     required this.loanRepayment,
+    required this.specialLoanRepayment,
+    this.specialLoanTypeName,
     required this.depositAddition,
     required this.finePayment,
     required this.contributionAddition,
@@ -85,6 +92,8 @@ class MemberMeetingPaymentEntryModel {
       meetingNumber: json['meetingNumber'] ?? 0,
       meetingDate: json['meetingDate'] ?? '',
       loanRepayment: (json['loanRepayment'] ?? 0.0).toDouble(),
+      specialLoanRepayment: (json['specialLoanRepayment'] ?? 0.0).toDouble(),
+      specialLoanTypeName: json['specialLoanTypeName'],
       depositAddition: (json['depositAddition'] ?? 0.0).toDouble(),
       finePayment: (json['finePayment'] ?? 0.0).toDouble(),
       contributionAddition: (json['contributionAddition'] ?? 0.0).toDouble(),

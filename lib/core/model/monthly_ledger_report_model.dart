@@ -5,6 +5,9 @@ class MonthlyLedgerReportModel {
   final List<MemberLedgerRowModel> memberRows;
   final Map<String, double> meetingTotals;
   final double grandTotalCollected;
+  final double totalSpecialLoanRepayments;
+  final double totalGroupExpenses;
+  final double surplusAmount;
 
   MonthlyLedgerReportModel({
     required this.yearMonth,
@@ -13,28 +16,37 @@ class MonthlyLedgerReportModel {
     required this.memberRows,
     required this.meetingTotals,
     required this.grandTotalCollected,
+    required this.totalSpecialLoanRepayments,
+    required this.totalGroupExpenses,
+    required this.surplusAmount,
   });
 
   factory MonthlyLedgerReportModel.fromJson(Map<String, dynamic> json) {
-    final availList = (json['availableMonths'] as List? ?? []).map((e) => e.toString()).toList();
-    final datesList = (json['meetingDates'] as List? ?? []).map((e) => e.toString()).toList();
-    final rowsList = (json['memberRows'] as List? ?? [])
-        .map((e) => MemberLedgerRowModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    var rawMonths = json['availableMonths'] as List? ?? [];
+    var months = rawMonths.map((e) => e.toString()).toList();
 
-    final totalsMap = <String, double>{};
-    final rawTotals = json['meetingTotals'] as Map<String, dynamic>? ?? {};
+    var rawDates = json['meetingDates'] as List? ?? [];
+    var dates = rawDates.map((e) => e.toString()).toList();
+
+    var rawRows = json['memberRows'] as List? ?? [];
+    var rows = rawRows.map((e) => MemberLedgerRowModel.fromJson(e)).toList();
+
+    var rawTotals = json['meetingTotals'] as Map<String, dynamic>? ?? {};
+    Map<String, double> totals = {};
     rawTotals.forEach((k, v) {
-      totalsMap[k] = (v as num).toDouble();
+      totals[k] = (v as num).toDouble();
     });
 
     return MonthlyLedgerReportModel(
       yearMonth: json['yearMonth'] ?? '',
-      availableMonths: availList,
-      meetingDates: datesList,
-      memberRows: rowsList,
-      meetingTotals: totalsMap,
-      grandTotalCollected: (json['grandTotalCollected'] ?? 0.0).toDouble(),
+      availableMonths: months,
+      meetingDates: dates,
+      memberRows: rows,
+      meetingTotals: totals,
+      grandTotalCollected: (json['grandTotalCollected'] as num?)?.toDouble() ?? 0.0,
+      totalSpecialLoanRepayments: (json['totalSpecialLoanRepayments'] as num?)?.toDouble() ?? 0.0,
+      totalGroupExpenses: (json['totalGroupExpenses'] as num?)?.toDouble() ?? 0.0,
+      surplusAmount: (json['surplusAmount'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
@@ -48,6 +60,7 @@ class MemberLedgerRowModel {
   final double monthlyContributionSum;
   final double depositSum;
   final double loanRepaymentSum;
+  final double specialLoanRepaymentSum;
   final double fineSum;
   final double currentLoanBalance;
   final double currentDepositBalance;
@@ -61,30 +74,32 @@ class MemberLedgerRowModel {
     required this.monthlyContributionSum,
     required this.depositSum,
     required this.loanRepaymentSum,
+    required this.specialLoanRepaymentSum,
     required this.fineSum,
     required this.currentLoanBalance,
     required this.currentDepositBalance,
   });
 
   factory MemberLedgerRowModel.fromJson(Map<String, dynamic> json) {
-    final collectionsMap = <String, double>{};
-    final rawCollections = json['meetingCollections'] as Map<String, dynamic>? ?? {};
+    var rawCollections = json['meetingCollections'] as Map<String, dynamic>? ?? {};
+    Map<String, double> collections = {};
     rawCollections.forEach((k, v) {
-      collectionsMap[k] = (v as num).toDouble();
+      collections[k] = (v as num).toDouble();
     });
 
     return MemberLedgerRowModel(
-      memberId: json['memberId'] ?? 0,
+      memberId: (json['memberId'] as num?)?.toInt() ?? 0,
       memberNumber: json['memberNumber'] ?? '',
       fullName: json['fullName'] ?? '',
-      meetingCollections: collectionsMap,
-      totalMonthlyCollected: (json['totalMonthlyCollected'] ?? 0.0).toDouble(),
-      monthlyContributionSum: (json['monthlyContributionSum'] ?? 0.0).toDouble(),
-      depositSum: (json['depositSum'] ?? 0.0).toDouble(),
-      loanRepaymentSum: (json['loanRepaymentSum'] ?? 0.0).toDouble(),
-      fineSum: (json['fineSum'] ?? 0.0).toDouble(),
-      currentLoanBalance: (json['currentLoanBalance'] ?? 0.0).toDouble(),
-      currentDepositBalance: (json['currentDepositBalance'] ?? 0.0).toDouble(),
+      meetingCollections: collections,
+      totalMonthlyCollected: (json['totalMonthlyCollected'] as num?)?.toDouble() ?? 0.0,
+      monthlyContributionSum: (json['monthlyContributionSum'] as num?)?.toDouble() ?? 0.0,
+      depositSum: (json['depositSum'] as num?)?.toDouble() ?? 0.0,
+      loanRepaymentSum: (json['loanRepaymentSum'] as num?)?.toDouble() ?? 0.0,
+      specialLoanRepaymentSum: (json['specialLoanRepaymentSum'] as num?)?.toDouble() ?? 0.0,
+      fineSum: (json['fineSum'] as num?)?.toDouble() ?? 0.0,
+      currentLoanBalance: (json['currentLoanBalance'] as num?)?.toDouble() ?? 0.0,
+      currentDepositBalance: (json['currentDepositBalance'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }

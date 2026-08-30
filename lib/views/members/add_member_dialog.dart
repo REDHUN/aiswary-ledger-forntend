@@ -174,7 +174,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
               onPressed: isLoading
                   ? null
                   : () async {
-                      if (numCtrl.text.isEmpty || nameCtrl.text.isEmpty || userCtrl.text.isEmpty || passCtrl.text.isEmpty) {
+                      final uname = userCtrl.text.trim().isNotEmpty ? userCtrl.text.trim() : phoneCtrl.text.trim();
+                      if (numCtrl.text.isEmpty || nameCtrl.text.isEmpty || uname.isEmpty || passCtrl.text.isEmpty) {
                         AppSnackbar.showError(context, 'Please fill required fields');
                         return;
                       }
@@ -182,7 +183,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                       final success = await context.read<MemberViewModel>().createMember(
                             memberNumber: numCtrl.text.trim(),
                             fullName: nameCtrl.text.trim(),
-                            username: userCtrl.text.trim(),
+                            username: uname,
                             password: passCtrl.text.trim(),
                             phone: phoneCtrl.text.trim(),
                             joiningDate: dateStr,

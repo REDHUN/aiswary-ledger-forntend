@@ -1,13 +1,15 @@
 class ApiEndpoints {
   // static const String baseUrl = "http://localhost:8080/api/v1";
-  static const String baseUrl = "http://192.168.1.6:8080/api/v1";
+  // static const String baseUrl = "http://192.168.1.6:8080/api/v1";
+  static const String baseUrl =
+      "https://aiswary-ledger-backend-git-374379557058.asia-south1.run.app/api/v1";
 
   // Auth
   static const String login = "/auth/login";
 
   // Members
   static const String membersPath = "/members";
-  static String members({int page = 0, int size = 100, String? query}) {
+  static String members({int page = 0, int size = 20, String? query}) {
     if (query != null && query.trim().isNotEmpty) {
       final encoded = Uri.encodeComponent(query.trim());
       return "/members?page=$page&size=$size&query=$encoded";
@@ -17,11 +19,16 @@ class ApiEndpoints {
 
   static String memberDetails(int id) => "/members/$id";
   static const String myProfile = "/members/me";
-  static String myTransactions({int page = 0, int size = 20}) => "/members/me/transactions?page=$page&size=$size";
-  static String myReport(String? yearMonth) => yearMonth != null && yearMonth.isNotEmpty ? "/members/me/report?yearMonth=$yearMonth" : "/members/me/report";
+  static String myTransactions({int page = 0, int size = 20}) =>
+      "/members/me/transactions?page=$page&size=$size";
+  static String myReport(String? yearMonth) =>
+      yearMonth != null && yearMonth.isNotEmpty
+      ? "/members/me/report?yearMonth=$yearMonth"
+      : "/members/me/report";
   static const String specialLoanTypes = "/settings/special-loan-types";
   static const String surplusAmount = "/settings/surplus-amount";
   static const String expenseTypes = "/settings/expense-types";
+  static const String groupProfits = "/group-profits";
   static const String groupExpenses = "/expenses";
   static const String groups = "/groups";
   static const String groupLoans = "/groups/loans";
@@ -49,24 +56,32 @@ class ApiEndpoints {
   // Processing
   static String memberProcessingForm(int meetingId, int memberId) =>
       "/meetings/$meetingId/members/$memberId/processing";
-  static String processMember(int meetingId, int memberId, {bool isUpdate = false}) =>
-      isUpdate
-          ? "/meetings/$meetingId/members/$memberId/process?isUpdate=true"
-          : "/meetings/$meetingId/members/$memberId/process";
+  static String processMember(
+    int meetingId,
+    int memberId, {
+    bool isUpdate = false,
+  }) => isUpdate
+      ? "/meetings/$meetingId/members/$memberId/process?isUpdate=true"
+      : "/meetings/$meetingId/members/$memberId/process";
 
   // Reports
   static const String reportSummary = "/reports/summary";
   static String reportPeriod(String? startDate, String? endDate) {
     final params = <String, String>{};
-    if (startDate != null && startDate.isNotEmpty) params['startDate'] = startDate;
+    if (startDate != null && startDate.isNotEmpty) {
+      params['startDate'] = startDate;
+    }
     if (endDate != null && endDate.isNotEmpty) params['endDate'] = endDate;
     final q = Uri(queryParameters: params).query;
     return q.isNotEmpty ? "/reports/period?$q" : "/reports/period";
   }
+
   static const String reportMemberBalances = "/reports/member-balances";
+  static const String reportCategory = "/reports/category";
   static const String reportMeetingsList = "/reports/meetings";
   static String reportMeetingDetails(int id) => "/reports/meetings/$id";
-  static String reportMonthlyLedger(String yearMonth) => "/reports/monthly-ledger?yearMonth=$yearMonth";
+  static String reportMonthlyLedger(String yearMonth) =>
+      "/reports/monthly-ledger?yearMonth=$yearMonth";
 
   // Dashboard & Transactions
   static const String dashboardSummary = "/dashboard/summary";
@@ -86,11 +101,21 @@ class ApiEndpoints {
       'page': page.toString(),
       'size': size.toString(),
     };
-    if (query != null && query.trim().isNotEmpty) params['query'] = query.trim();
-    if (accountType != null && accountType.isNotEmpty) params['accountType'] = accountType;
-    if (transactionType != null && transactionType.isNotEmpty) params['transactionType'] = transactionType;
-    if (isReversed != null) params['isReversed'] = isReversed.toString();
-    if (startDate != null && startDate.isNotEmpty) params['startDate'] = startDate;
+    if (query != null && query.trim().isNotEmpty) {
+      params['query'] = query.trim();
+    }
+    if (accountType != null && accountType.isNotEmpty) {
+      params['accountType'] = accountType;
+    }
+    if (transactionType != null && transactionType.isNotEmpty) {
+      params['transactionType'] = transactionType;
+    }
+    if (isReversed != null) {
+      params['isReversed'] = isReversed.toString();
+    }
+    if (startDate != null && startDate.isNotEmpty) {
+      params['startDate'] = startDate;
+    }
     if (endDate != null && endDate.isNotEmpty) params['endDate'] = endDate;
 
     final queryString = Uri(queryParameters: params).query;

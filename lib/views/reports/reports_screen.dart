@@ -9,10 +9,7 @@ import 'package:ashgledger/core/localization/app_localizations.dart';
 import 'package:ashgledger/core/di/service_locator.dart';
 import 'package:ashgledger/core/repository/reports_repository.dart';
 import 'package:ashgledger/viewmodel/reports_viewmodel.dart';
-import 'package:ashgledger/core/model/member_balance_report_model.dart';
 import 'package:ashgledger/core/model/meeting_report_model.dart';
-// ignore: unused_import
-import 'package:ashgledger/core/model/monthly_ledger_report_model.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -20,7 +17,7 @@ class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ReportsViewModel(sl<ReportsRepository>()),
+      create: (_) => ReportsViewModel(sl<ReportsRepository>())..fetchAllReports(),
       child: const _ReportsScreenBody(),
     );
   }
@@ -36,19 +33,13 @@ class _ReportsScreenBody extends StatefulWidget {
 class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _memberSearchCtrl = TextEditingController();
-  String _selectedYearMonth = '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}';
+  String _selectedCategoryFilter = 'ALL';
+  
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
-  _selectedYearMonth = '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}';
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<ReportsViewModel>().fetchAllReports();
-        context.read<ReportsViewModel>().fetchMonthlyLedgerReport(_selectedYearMonth);
-      }
-    });
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -56,26 +47,6 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
     _tabController.dispose();
     _memberSearchCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDateRange(BuildContext context, ReportsViewModel vm) async {
-    final DateTimeRange? picked = await AppDatePicker.pickDateRange(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-      initialDateRange: vm.startDate != null && vm.endDate != null
-          ? DateTimeRange(
-              start: DateTime.parse(vm.startDate!),
-              end: DateTime.parse(vm.endDate!),
-            )
-          : null,
-    );
-
-    if (picked != null) {
-      final startStr = "${picked.start.year}-${picked.start.month.toString().padLeft(2, '0')}-${picked.start.day.toString().padLeft(2, '0')}";
-      final endStr = "${picked.end.year}-${picked.end.month.toString().padLeft(2, '0')}-${picked.end.day.toString().padLeft(2, '0')}";
-      vm.setDateRange(startStr, endStr);
-    }
   }
 
   @override
@@ -86,17 +57,9 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isMl ? 'ധനകാര്യ റിപ്പോർട്ടുകൾ' : 'Financial Reports',
+          isMl ? 'റിപ്പോർട്ടുകൾ (Reports)' : 'Reports & Analytics',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
-        actions: [
-          Consumer<ReportsViewModel>(
-            builder: (context, vm, _) => IconButton(
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: () => vm.fetchAllReports(),
-            ),
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -107,17 +70,18 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
           labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
           unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w500, fontSize: 13),
           tabs: [
-            Tab(text: isMl ? 'അവലോകനം' : 'Overview'),
-            Tab(text: isMl ? 'കാലയളവ്' : 'Period'),
-            Tab(text: isMl ? 'അംഗ ബാക്കി' : 'Member Balances'),
-            Tab(text: isMl ? 'യോഗ റിപ്പോർട്ട്' : 'Meeting Report'),
-            Tab(text: isMl ? 'പ്രതിമാസ ലെഡ്ജർ' : 'Monthly Ledger'),
+            Tab(text: isMl ? 'ആകെ വിവരങ്ങൾ' : 'Overview'),
+            Tab(text: isMl ? 'പിരീഡ് റിപ്പോർട്ട്' : 'Period'),
+            Tab(text: isMl ? 'വായ്പ & നിക്ഷേപം' : 'Loans & Deposits'),
+            Tab(text: isMl ? 'സാമ്പത്തിക സഹായം' : 'Financial Aid'),
+            Tab(text: isMl ? 'അംഗങ്ങളുടെ ബാലൻസ്' : 'Member Balances'),
+            Tab(text: isMl ? 'മീറ്റിംഗ് റിപ്പോർട്ട്' : 'Meeting Report'),
           ],
         ),
       ),
       body: Consumer<ReportsViewModel>(
         builder: (context, vm, _) {
-          if (vm.loadState.isLoading) return const MemberListShimmerLoading();
+          if (vm.loadState.isLoading) return const ReportsDashboardShimmerLoading();
           if (vm.loadState.hasError) {
             return CommonErrorWidget(
               message: vm.loadState.message ?? 'Failed to load reports',
@@ -130,9 +94,10 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
             children: [
               _buildOverviewTab(context, vm, isMl),
               _buildPeriodTab(context, vm, isMl),
+              _buildCategoryLoansDepositsTab(context, vm, isMl),
+              _buildFinancialAidReportTab(context, vm, isMl),
               _buildMemberBalancesTab(context, vm, isMl),
               _buildMeetingReportsTab(context, vm, isMl),
-              _buildMonthlyLedgerTab(context, vm, isMl),
             ],
           );
         },
@@ -150,7 +115,7 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
         padding: const EdgeInsets.all(16),
         children: [
           _buildHeaderBanner(
-            title: isMl ? 'ആകെ സാമ്പത്തിക നിലവാരം' : 'Total Financial Position',
+            title: isMl ? 'ആകെ സാമ്പത്തിക സ്ഥിതി' : 'Total Financial Position',
             subtitle: isMl ? '${summary.activeMembers} സജീവ അംഗങ്ങൾ' : '${summary.activeMembers} Active Members',
             icon: Icons.pie_chart_rounded,
           ),
@@ -161,19 +126,31 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 1.35,
+            childAspectRatio: 1.3,
             children: [
               _buildReportCard(
-                isMl ? 'നിക്ഷേപം (Savings)' : 'Deposits Balance',
-                summary.totalDeposits,
-                AppColors.accountDeposit,
-                Icons.savings_rounded,
+                isMl ? 'മിച്ച തുക (Surplus Reserve)' : 'Surplus Reserve Fund',
+                summary.surplusAmount,
+                Colors.teal,
+                Icons.account_balance_wallet_rounded,
               ),
               _buildReportCard(
-                isMl ? 'വായ്പ നിലവാരം' : 'Outstanding Loans',
+                isMl ? 'സ്പെഷ്യൽ വായ്പകൾ' : 'Special Loans Balance',
+                summary.totalSpecialLoanBalance,
+                Colors.purple,
+                Icons.stars_rounded,
+              ),
+              _buildReportCard(
+                isMl ? 'സാധാരണ വായ്പകൾ' : 'Normal Loans Balance',
                 summary.totalOutstandingLoans,
                 AppColors.accountLoan,
                 Icons.add_card_rounded,
+              ),
+              _buildReportCard(
+                isMl ? 'നിക്ഷേപം (Deposits)' : 'Deposits Balance',
+                summary.totalDeposits,
+                AppColors.accountDeposit,
+                Icons.savings_rounded,
               ),
               _buildReportCard(
                 isMl ? 'പ്രതിമാസ വരിസംഖ്യ' : 'Monthly Contributions',
@@ -182,22 +159,22 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
                 Icons.calendar_today_rounded,
               ),
               _buildReportCard(
+                isMl ? 'ഗ്രൂപ്പ് ചെലവുകൾ' : 'Group Expenses',
+                summary.totalGroupExpenses,
+                Colors.deepOrange,
+                Icons.receipt_long_rounded,
+              ),
+              _buildReportCard(
                 isMl ? 'പിഴ തുക' : 'Outstanding Fines',
                 summary.totalOutstandingFines,
                 AppColors.accountFine,
                 Icons.gavel_rounded,
               ),
               _buildReportCard(
-                isMl ? 'ധനസഹായം' : 'Financial Aid',
+                isMl ? 'സാമ്പത്തിക സഹായം' : 'Financial Aid',
                 summary.totalOutstandingFinancialAid,
                 AppColors.accountFinancialAid,
                 Icons.volunteer_activism_rounded,
-              ),
-              _buildReportCard(
-                isMl ? 'പലിശ വരവ്' : 'Interest Applied',
-                summary.totalOutstandingInterest,
-                AppColors.accountInterest,
-                Icons.calculate_rounded,
               ),
             ],
           ),
@@ -214,56 +191,92 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  isMl ? 'കാലയളവിലെ റിപ്പോർട്ട്' : 'Period Financial Statement',
-                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: AppColors.divider),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isMl ? 'തിയതി പരിധി തിരഞ്ഞെടുക്കുക' : 'Filter Date Range',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            final d = await AppDatePicker.pickDate(
+                              context: context,
+                              initialDate: vm.startDate != null ? (DateTime.tryParse(vm.startDate!) ?? DateTime.now()) : DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2035),
+                            );
+                            if (d != null) {
+                              vm.setDateRange(d.toString().substring(0, 10), vm.endDate);
+                            }
+                          },
+                          icon: const Icon(Icons.calendar_month_rounded, size: 16),
+                          label: Text(
+                            vm.startDate ?? (isMl ? 'ആരംഭ തീയതി' : 'Start Date'),
+                            style: GoogleFonts.outfit(fontSize: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            final d = await AppDatePicker.pickDate(
+                              context: context,
+                              initialDate: vm.endDate != null ? (DateTime.tryParse(vm.endDate!) ?? DateTime.now()) : DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2035),
+                            );
+                            if (d != null) {
+                              vm.setDateRange(vm.startDate, d.toString().substring(0, 10));
+                            }
+                          },
+                          icon: const Icon(Icons.calendar_month_rounded, size: 16),
+                          label: Text(
+                            vm.endDate ?? (isMl ? 'അവസാന തീയതി' : 'End Date'),
+                            style: GoogleFonts.outfit(fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                ),
-                onPressed: () => _selectDateRange(context, vm),
-                icon: const Icon(Icons.date_range_rounded, size: 16, color: AppColors.primary),
-                label: Text(
-                  vm.startDate != null && vm.endDate != null
-                      ? "${vm.startDate} ~ ${vm.endDate}"
-                      : (isMl ? 'തീയതി തിരഞ്ഞെടുക്കുക' : 'Select Date Range'),
-                  style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
           if (period != null) ...[
-            _buildSummaryRowCard(
-              isMl ? 'ആകെ ശേഖരണങ്ങൾ (Collections)' : 'Total Collections (Receipts)',
+            _buildReportCard(
+              isMl ? 'ആകെ സ്വീകരിച്ചത് (Collections)' : 'Period Collections',
               period.periodCollections,
               AppColors.success,
               Icons.arrow_downward_rounded,
             ),
             const SizedBox(height: 12),
-            _buildSummaryRowCard(
-              isMl ? 'ആകെ നൽകിയ വായ്പകൾ (Disbursals)' : 'Total Disbursals (Loans)',
+            _buildReportCard(
+              isMl ? 'ആകെ നൽകിയ വായ്പകൾ (Disbursals)' : 'Period Disbursals',
               period.periodDisbursals,
-              Colors.orange,
+              AppColors.error,
               Icons.arrow_upward_rounded,
             ),
             const SizedBox(height: 12),
-            _buildSummaryRowCard(
-              isMl ? 'ഇടപാടുകളുടെ എണ്ണം' : 'Total Transactions Count',
-              period.totalTransactionsCount.toDouble(),
-              AppColors.primary,
+            _buildReportCard(
+              isMl ? 'ഗ്രൂപ്പ് ചെലവുകൾ' : 'Period Group Expenses',
+              period.totalGroupExpenses,
+              Colors.deepOrange,
               Icons.receipt_long_rounded,
-              isCurrency: false,
             ),
           ],
         ],
@@ -271,49 +284,625 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
     );
   }
 
-  Widget _buildMemberBalancesTab(BuildContext context, ReportsViewModel vm, bool isMl) {
-    final list = vm.filteredMemberBalances;
+    
+  Widget _buildCategoryLoansDepositsTab(BuildContext context, ReportsViewModel vm, bool isMl) {
+    final cat = vm.categoryReport;
+    if (cat == null) return const MemberListShimmerLoading();
+
+    return RefreshIndicator(
+      onRefresh: () => vm.fetchAllReports(),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildHeaderBanner(
+            title: isMl ? 'വായ്പ & നിക്ഷേപ റിപ്പോർട്ടുകൾ' : 'Loans & Deposits Category Report',
+            subtitle: isMl ? 'എല്ലാ സാമ്പത്തിക വായ്പകളുടെയും നിക്ഷേപങ്ങളുടെയും വിവരങ്ങൾ' : 'Detailed summary of active loans and member deposits',
+            icon: Icons.account_balance_wallet_rounded,
+          ),
+          const SizedBox(height: 16),
+
+          // Loans Overview Cards
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.accountLoan.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.accountLoan.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isMl ? 'സാധാരണ വായ്പ' : 'Regular Loans',
+                        style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '₹${cat.totalOutstandingLoanBalance.toStringAsFixed(2)}',
+                        style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.accountLoan),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.deepOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.deepOrange.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isMl ? 'സ്പെഷ്യൽ വായ്പകൾ' : 'Special Loans',
+                        style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '₹${cat.totalSpecialLoanBalance.toStringAsFixed(2)}',
+                        style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Deposits & Contributions Row
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.accountDeposit.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.accountDeposit.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isMl ? 'ആകെ നിക്ഷേപം' : 'Total Deposits',
+                        style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '₹${cat.totalDepositsCollected.toStringAsFixed(2)}',
+                        style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.accountDeposit),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.accountContribution.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.accountContribution.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isMl ? 'വരിസംഖ്യ & പിഴ' : 'Contrib & Fines',
+                        style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '₹${(cat.totalContributionsCollected + cat.totalFinesCollected).toStringAsFixed(2)}',
+                        style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.accountContribution),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Active Loan Members Section
+          Text(
+            isMl ? 'വായ്പയുള്ള അംഗങ്ങൾ (${cat.loanMembers.length})' : 'Active Loan Members (${cat.loanMembers.length})',
+            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+          ),
+          const SizedBox(height: 10),
+          if (cat.loanMembers.isEmpty)
+            Card(
+              elevation: 0,
+              color: Colors.grey.shade50,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text(
+                    isMl ? 'നിലവിൽ വായ്പകളൊന്നും കുടിശ്ശികയില്ല' : 'No active loans outstanding',
+                    style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 13),
+                  ),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: cat.loanMembers.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final item = cat.loanMembers[index];
+                return Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: AppColors.divider),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.accountLoan.withValues(alpha: 0.12),
+                      child: Text(
+                        '#${item.memberNumber}',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.accountLoan, fontSize: 11),
+                      ),
+                    ),
+                    title: Text(item.fullName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                    subtitle: Text(item.categoryName, style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
+                    trailing: Text(
+                      '₹${item.balance.toStringAsFixed(2)}',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.accountLoan),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+          const SizedBox(height: 24),
+
+          // Deposit Members Section
+          Text(
+            isMl ? 'നിക്ഷേപമുള്ള അംഗങ്ങൾ (${cat.depositMembers.length})' : 'Deposit Members (${cat.depositMembers.length})',
+            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+          ),
+          const SizedBox(height: 10),
+          if (cat.depositMembers.isEmpty)
+            Card(
+              elevation: 0,
+              color: Colors.grey.shade50,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text(
+                    isMl ? 'നിക്ഷേപങ്ങളൊന്നും വിവരങ്ങളില്ല' : 'No deposits recorded',
+                    style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 13),
+                  ),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: cat.depositMembers.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final item = cat.depositMembers[index];
+                return Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: AppColors.divider),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.accountDeposit.withValues(alpha: 0.12),
+                      child: Text(
+                        '#${item.memberNumber}',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.accountDeposit, fontSize: 11),
+                      ),
+                    ),
+                    title: Text(item.fullName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                    subtitle: Text(item.categoryName, style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
+                    trailing: Text(
+                      '₹${item.balance.toStringAsFixed(2)}',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.accountDeposit),
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialAidReportTab(BuildContext context, ReportsViewModel vm, bool isMl) {
+    final cat = vm.categoryReport;
+    if (cat == null) return const MemberListShimmerLoading();
+
+    final aidList = cat.financialAidDisbursements;
+
+    return RefreshIndicator(
+      onRefresh: () => vm.fetchAllReports(),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildHeaderBanner(
+            title: isMl ? 'സാമ്പത്തിക സഹായ റിപ്പോർട്ട്' : 'Financial Aid Disbursed Report',
+            subtitle: isMl ? 'അംഗങ്ങൾക്ക് നൽകിയ സാമ്പത്തിക സഹായങ്ങളുടെ സമ്പൂർണ്ണ വിവരങ്ങൾ' : 'Complete record of financial aid grants given to members',
+            icon: Icons.volunteer_activism_rounded,
+          ),
+          const SizedBox(height: 16),
+
+          // Total Aid Disbursed KPI Banner
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.accountFinancialAid, AppColors.accountFinancialAid.withValues(alpha: 0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accountFinancialAid.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.volunteer_activism_rounded, size: 36, color: Colors.white),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isMl ? 'ആകെ നൽകിയ സാമ്പത്തിക സഹായം' : 'Total Financial Aid Given',
+                        style: GoogleFonts.outfit(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '₹${cat.totalFinancialAidDisbursed.toStringAsFixed(2)}',
+                        style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Disbursements History List Header
+          Text(
+            isMl ? 'സഹായ വിതരണ ഹിസ്റ്ററി (${aidList.length})' : 'Financial Aid Disbursements (${aidList.length})',
+            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+          ),
+          const SizedBox(height: 10),
+
+          if (aidList.isEmpty)
+            Card(
+              elevation: 0,
+              color: Colors.grey.shade50,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: Text(
+                    isMl ? 'ഇതുവരെ സാമ്പത്തിക സഹായങ്ങൾ വിതരണം ചെയ്തിട്ടില്ല' : 'No financial aid disbursements recorded yet',
+                    style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 13),
+                  ),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: aidList.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final item = aidList[index];
+                return Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: AppColors.divider),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: AppColors.accountFinancialAid.withValues(alpha: 0.12),
+                          child: Text(
+                            '#${item.memberNumber}',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.accountFinancialAid,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.fullName,
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+                              ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  if (item.transactionDate.isNotEmpty)
+                                    Text(
+                                      item.transactionDate,
+                                      style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                                    ),
+                                  if (item.meetingNumber != '-') ...[
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '| Meeting #${item.meetingNumber}',
+                                      style: GoogleFonts.outfit(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (item.notes != null && item.notes!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.notes!,
+                                  style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        Text(
+                          '₹${item.amount.toStringAsFixed(2)}',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppColors.accountFinancialAid,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+Widget _buildMemberBalancesTab(BuildContext context, ReportsViewModel vm, bool isMl) {
+    final categories = [
+      {'key': 'ALL', 'labelMl': 'എല്ലാം (All)', 'labelEn': 'All'},
+      {'key': 'LOAN', 'labelMl': 'സാധാരണ വായ്പ', 'labelEn': 'Regular Loans'},
+      {'key': 'SPECIAL_LOAN', 'labelMl': 'സ്പെഷ്യൽ വായ്പ', 'labelEn': 'Special Loans'},
+      {'key': 'DEPOSIT', 'labelMl': 'നിക്ഷേപം', 'labelEn': 'Deposits'},
+      {'key': 'CONTRIBUTION', 'labelMl': 'വരിസംഖ്യ', 'labelEn': 'Contributions'},
+      {'key': 'FINE', 'labelMl': 'പിഴ', 'labelEn': 'Fines'},
+      {'key': 'AID', 'labelMl': 'സാമ്പത്തിക സഹായം', 'labelEn': 'Financial Aid'},
+    ];
+
+    final rawList = vm.filteredMemberBalances;
+    final filteredMembers = rawList.where((m) {
+      switch (_selectedCategoryFilter) {
+        case 'LOAN':
+          return m.loanBalance > 0;
+        case 'SPECIAL_LOAN':
+          return m.specialLoanBalance > 0 || m.specialLoanBalances.isNotEmpty;
+        case 'DEPOSIT':
+          return m.depositBalance > 0;
+        case 'CONTRIBUTION':
+          return m.contributionBalance > 0;
+        case 'FINE':
+          return m.fineBalance > 0;
+        case 'AID':
+          return m.financialAidBalance > 0;
+        default:
+          return true;
+      }
+    }).toList();
+
+    double categoryTotal = 0.0;
+    for (var m in filteredMembers) {
+      switch (_selectedCategoryFilter) {
+        case 'LOAN':
+          categoryTotal += m.loanBalance;
+          break;
+        case 'SPECIAL_LOAN':
+          categoryTotal += m.specialLoanBalance;
+          break;
+        case 'DEPOSIT':
+          categoryTotal += m.depositBalance;
+          break;
+        case 'CONTRIBUTION':
+          categoryTotal += m.contributionBalance;
+          break;
+        case 'FINE':
+          categoryTotal += m.fineBalance;
+          break;
+        case 'AID':
+          categoryTotal += m.financialAidBalance;
+          break;
+        default:
+          categoryTotal += m.netBalance;
+          break;
+      }
+    }
 
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          color: Colors.white,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: TextField(
             controller: _memberSearchCtrl,
-            style: GoogleFonts.outfit(fontSize: 14, color: AppColors.textDark),
-            decoration: InputDecoration(
-              hintText: isMl ? 'അംഗത്തിൻ്റെ പേര്, നമ്പർ തിരയുക...' : 'Search member balances...',
-              hintStyle: GoogleFonts.outfit(fontSize: 13, color: AppColors.textMuted),
-              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
-              suffixIcon: _memberSearchCtrl.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, color: Colors.grey),
-                      onPressed: () {
-                        _memberSearchCtrl.clear();
-                        vm.setSearchQuery('');
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: AppColors.bgLight,
-              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
             onChanged: (val) => vm.setSearchQuery(val),
+            decoration: InputDecoration(
+              hintText: isMl ? 'അംഗത്തിന്റെ പേര് അല്ലെങ്കിൽ നമ്പർ...' : 'Search member name or number...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
           ),
         ),
-        const Divider(height: 1, color: AppColors.borderLight),
+
+        // Category Report Filter Chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: categories.map((cat) {
+              final isSelected = _selectedCategoryFilter == cat['key'];
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  selected: isSelected,
+                  label: Text(
+                    isMl ? cat['labelMl']! : cat['labelEn']!,
+                    style: GoogleFonts.outfit(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isSelected ? Colors.white : AppColors.textDark,
+                      fontSize: 12,
+                    ),
+                  ),
+                  backgroundColor: Colors.grey.shade100,
+                  selectedColor: AppColors.primary,
+                  checkmarkColor: Colors.white,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        _selectedCategoryFilter = cat['key']!;
+                      });
+                    }
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+
+        // Category Summary Banner (when a specific category filter is active)
+        if (_selectedCategoryFilter != 'ALL')
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.analytics_rounded, color: AppColors.primary, size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isMl
+                            ? '${categories.firstWhere((c) => c['key'] == _selectedCategoryFilter)['labelMl']} റിപ്പോർട്ട്'
+                            : '${categories.firstWhere((c) => c['key'] == _selectedCategoryFilter)['labelEn']} Report',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primaryDark),
+                      ),
+                      Text(
+                        '${filteredMembers.length} ${isMl ? "അംഗങ്ങൾ" : "members"} | Total: ₹${categoryTotal.toStringAsFixed(2)}',
+                        style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '₹${categoryTotal.toStringAsFixed(2)}',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
+                ),
+              ],
+            ),
+          ),
+
+        // Itemized Member List
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: list.length,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: filteredMembers.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
-              final item = list[index];
-              return _buildMemberBalanceCard(item, isMl);
+              final m = filteredMembers[index];
+              return Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: const BorderSide(color: AppColors.divider),
+                ),
+                child: ExpansionTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    child: Text('#${m.memberNumber}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                  ),
+                  title: Text(m.fullName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15)),
+                  subtitle: Text('Loan: ₹${m.loanBalance.toStringAsFixed(2)} | Deposit: ₹${m.depositBalance.toStringAsFixed(2)}', style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _buildDetailRow('സാധാരണ വായ്പ (Loan Balance)', m.loanBalance, AppColors.accountLoan),
+                          ...m.specialLoanBalances.map((spl) {
+                            String splTitle = spl.specialLoanTypeName;
+                            if (splTitle == 'Special Loan') {
+                              splTitle = isMl ? 'സ്പെഷ്യൽ വായ്പ' : 'Special Loan';
+                            }
+                            return Column(
+                              children: [
+                                const SizedBox(height: 6),
+                                _buildDetailRow(splTitle, spl.currentBalance, Colors.deepOrange),
+                              ],
+                            );
+                          }),
+                          if (m.specialLoanBalances.isEmpty && m.specialLoanBalance > 0) ...[
+                            const SizedBox(height: 6),
+                            _buildDetailRow(isMl ? 'സ്പെഷ്യൽ വായ്പ' : 'Special Loan', m.specialLoanBalance, Colors.deepOrange),
+                          ],
+                          const SizedBox(height: 6),
+                          _buildDetailRow('നിക്ഷേപം (Deposit Balance)', m.depositBalance, AppColors.accountDeposit),
+                          const SizedBox(height: 6),
+                          _buildDetailRow('വരിസംഖ്യ (Contribution)', m.contributionBalance, AppColors.accountContribution),
+                          const SizedBox(height: 6),
+                          _buildDetailRow('പിഴ (Fines Balance)', m.fineBalance, AppColors.accountFine),
+                          const SizedBox(height: 6),
+                          _buildDetailRow('സാമ്പത്തിക സഹായം (Financial Aid)', m.financialAidBalance, AppColors.accountFinancialAid),
+                          const SizedBox(height: 6),
+                          _buildDetailRow('പലിശ (Interest Balance)', m.interestBalance, AppColors.accountInterest),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
         ),
@@ -322,143 +911,93 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
   }
 
   Widget _buildMeetingReportsTab(BuildContext context, ReportsViewModel vm, bool isMl) {
-    final meetings = vm.meetingReports;
-    final selected = vm.selectedMeetingReport;
+    final reports = vm.meetingReports;
 
-    if (meetings.isEmpty) {
-      return Center(
-        child: Text(isMl ? 'യോഗങ്ങളൊന്നും കണ്ടെത്തിയില്ല' : 'No meetings found'),
-      );
-    }
-
-    return ListView(
+    return ListView.separated(
       padding: const EdgeInsets.all(16),
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
+      itemCount: reports.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final m = reports[index];
+        return Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderLight),
+            side: const BorderSide(color: AppColors.divider),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<MeetingReportModel>(
-              isExpanded: true,
-              value: selected,
-              items: meetings.map((m) {
-                return DropdownMenuItem<MeetingReportModel>(
-                  value: m,
-                  child: Text(
-                    isMl
-                        ? 'യോഗം #${m.meetingNumber} (${m.meetingDate}) - ₹${m.totalCollected.toStringAsFixed(0)}'
-                        : 'Meeting #${m.meetingNumber} (${m.meetingDate}) - ₹${m.totalCollected.toStringAsFixed(0)}',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textDark),
-                  ),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) vm.selectMeetingReport(val);
-              },
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(14),
+            leading: CircleAvatar(
+              backgroundColor: AppColors.primary,
+              child: Text('#${m.meetingNumber}', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
+            title: Text('Meeting #${m.meetingNumber} (${m.meetingDate})', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text('Total Collected: ₹${m.totalCollected.toStringAsFixed(2)} | Surplus: ₹${m.surplusAmount.toStringAsFixed(2)}', style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
+                if (m.totalGroupExpenses > 0)
+                  Text('Expenses: ₹${m.totalGroupExpenses.toStringAsFixed(2)}', style: GoogleFonts.outfit(fontSize: 12, color: Colors.deepOrange)),
+              ],
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => _showMeetingDetailModal(context, m, isMl),
           ),
-        ),
-        const SizedBox(height: 16),
-        if (selected != null) ...[
-          _buildHeaderBanner(
-            title: isMl ? 'യോഗം #${selected.meetingNumber} പിരിവ്' : 'Meeting #${selected.meetingNumber} Collection',
-            subtitle: isMl ? 'ആകെ കളക്ഷൻ: ₹${selected.totalCollected.toStringAsFixed(2)}' : 'Total Collection: ₹${selected.totalCollected.toStringAsFixed(2)}',
-            icon: Icons.event_available_rounded,
-          ),
-          const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.35,
-            children: [
-              _buildReportCard(
-                isMl ? 'വായ്പ തിരിച്ചടവ്' : 'Loan Repayments',
-                selected.totalLoanRepayments,
-                AppColors.accountLoan,
-                Icons.assignment_return_rounded,
-              ),
-              _buildReportCard(
-                isMl ? 'നിക്ഷേപ പിരിവ്' : 'Savings Deposits',
-                selected.totalDepositsCollected,
-                AppColors.accountDeposit,
-                Icons.savings_rounded,
-              ),
-              _buildReportCard(
-                isMl ? 'പിഴ തുക' : 'Fines Collected',
-                selected.totalFinesCollected,
-                AppColors.accountFine,
-                Icons.gavel_rounded,
-              ),
-              _buildReportCard(
-                isMl ? 'വരിസംഖ്യ പിരിവ്' : 'Contributions',
-                selected.totalMonthlyContributions,
-                AppColors.accountContribution,
-                Icons.calendar_today_rounded,
-              ),
-              _buildReportCard(
-                isMl ? 'നൽകിയ വായ്പകൾ' : 'Loans Issued',
-                selected.totalLoansIssued,
-                Colors.orange,
-                Icons.add_card_rounded,
-              ),
-              _buildReportCard(
-                isMl ? 'ധനസഹായം' : 'Financial Aid',
-                selected.totalFinancialAid,
-                AppColors.accountFinancialAid,
-                Icons.volunteer_activism_rounded,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            isMl ? 'അംഗങ്ങളുടെ കളക്ഷൻ വിവരങ്ങൾ' : 'Member Collection Breakdown',
-            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
-          ),
-          const SizedBox(height: 12),
-          if (selected.memberCollections.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Center(child: Text(isMl ? 'കളക്ഷൻ വിവരങ്ങളില്ല' : 'No member collection entries')),
-            )
-          else
-            ...selected.memberCollections.map((m) => _buildMemberMeetingCollectionTile(m, isMl)),
-        ],
-      ],
+        );
+      },
     );
   }
 
-  Widget _buildMemberMeetingCollectionTile(MemberMeetingCollectionModel item, bool isMl) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.borderLight),
-      ),
-      elevation: 0,
-      color: Colors.white,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        leading: CircleAvatar(
-          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          child: Text(item.memberNumber, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
-        ),
-        title: Text(item.fullName, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-        subtitle: Text(
-          isMl
-              ? 'വായ്പ: ₹${item.loanRepayment.toStringAsFixed(0)} | നിക്ഷേപം: ₹${item.depositAddition.toStringAsFixed(0)} | പിഴ: ₹${item.finePayment.toStringAsFixed(0)} | വരിസംഖ്യ: ₹${item.contributionAddition.toStringAsFixed(0)}'
-              : 'Loan: ₹${item.loanRepayment.toStringAsFixed(0)} | Deposit: ₹${item.depositAddition.toStringAsFixed(0)} | Fine: ₹${item.finePayment.toStringAsFixed(0)} | Contrib: ₹${item.contributionAddition.toStringAsFixed(0)}',
-          style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textSecondary),
-        ),
-        trailing: Text(
-          '₹${item.totalMemberCollected.toStringAsFixed(2)}',
-          style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.success),
+  void _showMeetingDetailModal(BuildContext context, MeetingReportModel m, bool isMl) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Meeting #${m.meetingNumber} (${m.meetingDate}) Details', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+            const Divider(height: 20),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildDetailRow('സാധാരണ വയ്പ അടവ്', m.totalLoanRepayments, AppColors.success),
+                  if (m.totalSpecialLoanRepayments > 0) ...[
+                    const SizedBox(height: 6),
+                    _buildDetailRow('സ്പെഷ്യൽ വായ്പ അടവ്', m.totalSpecialLoanRepayments, AppColors.accountFinancialAid),
+                  ],
+                  const SizedBox(height: 6),
+                  _buildDetailRow('നിക്ഷേപം (Deposits)', m.totalDepositsCollected, AppColors.info),
+                  const SizedBox(height: 6),
+                  _buildDetailRow('വരിസംഖ്യ (Monthly Contribution)', m.totalMonthlyContributions, AppColors.accountContribution),
+                  const SizedBox(height: 6),
+                  _buildDetailRow('പിഴ (Fines)', m.totalFinesCollected, AppColors.accountFine),
+                  const SizedBox(height: 6),
+                  _buildDetailRow('സാമ്പത്തിക സഹായം', m.totalFinancialAid, AppColors.error),
+                  if (m.totalGroupExpenses > 0) ...[
+                    const SizedBox(height: 6),
+                    _buildDetailRow('ഗ്രൂപ്പ് ചെലവുകൾ', m.totalGroupExpenses, Colors.deepOrange),
+                  ],
+                  const SizedBox(height: 6),
+                  _buildDetailRow('മിച്ച തുക (Surplus Reserve)', m.surplusAmount, Colors.teal),
+                  const SizedBox(height: 14),
+                  Text('Member Collections:', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 8),
+                  for (var c in m.memberCollections)
+                    ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text('#${c.memberNumber} ${c.fullName}', style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                      trailing: Text('₹${c.totalMemberCollected.toStringAsFixed(2)}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -466,33 +1005,32 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
 
   Widget _buildHeaderBanner({required String title, required String subtitle, required IconData icon}) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppColors.headerGradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDark.withValues(alpha: 0.25),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 26,
-            backgroundColor: Colors.white24,
-            child: Icon(icon, color: Colors.white, size: 28),
-          ),
-          const SizedBox(width: 16),
+          CircleAvatar(backgroundColor: Colors.white24, child: Icon(icon, color: Colors.white)),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 4),
-                Text(subtitle, style: GoogleFonts.outfit(fontSize: 13, color: Colors.white70)),
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -501,306 +1039,44 @@ class _ReportsScreenBodyState extends State<_ReportsScreenBody> with SingleTicke
     );
   }
 
-  Widget _buildReportCard(String title, double val, Color color, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-              Icon(icon, size: 20, color: color),
-            ],
-          ),
-          Text(
-            '₹${val.toStringAsFixed(2)}',
-            style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: color),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryRowCard(String title, double val, Color color, IconData icon, {bool isCurrency = true}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: color.withValues(alpha: 0.12),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(title, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-          ),
-          Text(
-            isCurrency ? '₹${val.toStringAsFixed(2)}' : val.toInt().toString(),
-            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: color),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMemberBalanceCard(MemberBalanceReportModel item, bool isMl) {
+  Widget _buildReportCard(String title, double amount, Color color, IconData icon) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.borderLight),
-      ),
       elevation: 0,
-      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: color.withValues(alpha: 0.3)),
+      ),
+      color: color.withValues(alpha: 0.08),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  child: Text(item.memberNumber, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(item.fullName, style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                ),
-              ],
-            ),
-            const Divider(height: 20, color: AppColors.borderLight),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildSubBalanceItem(isMl ? 'നിക്ഷേപം' : 'Deposit', item.depositBalance, AppColors.accountDeposit),
-                _buildSubBalanceItem(isMl ? 'വായ്പ' : 'Loan', item.loanBalance, AppColors.accountLoan),
-                _buildSubBalanceItem(isMl ? 'വരിസംഖ്യ' : 'Contrib', item.contributionBalance, AppColors.accountContribution),
-                _buildSubBalanceItem(isMl ? 'പിഴ' : 'Fine', item.fineBalance, AppColors.accountFine),
-              ],
-            ),
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 6),
+            Text(title, style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 4),
+            Text('₹${amount.toStringAsFixed(2)}', style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: color)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSubBalanceItem(String label, double amt, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textSecondary)),
-        const SizedBox(height: 2),
-        Text('₹${amt.toStringAsFixed(0)}', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
-      ],
-    );
-  }
-
-  Widget _buildMonthlyLedgerTab(BuildContext context, ReportsViewModel vm, bool isMl) {
-    final report = vm.monthlyLedgerReport;
-
-    final monthsList = report?.availableMonths ?? [];
-    if (report != null && report.availableMonths.isNotEmpty) {
-      if (!monthsList.contains(_selectedYearMonth)) {
-        _selectedYearMonth = report.yearMonth.isNotEmpty ? report.yearMonth : monthsList.first;
-      }
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        await vm.fetchMonthlyLedgerReport(_selectedYearMonth);
-      },
-      child: ListView(
-        padding: const EdgeInsets.all(16),
+  Widget _buildDetailRow(String label, double amount, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.bgLight,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildHeaderBanner(
-            title: isMl ? 'പ്രതിമാസ ലെഡ്ജർ ഷീറ്റ്' : 'Monthly Sangham Ledger Sheet',
-            subtitle: isMl ? 'എല്ലാ അംഗങ്ങളുടെയും യോഗാടിസ്ഥാനത്തിലുള്ള അടവ് ലെഡ്ജർ' : 'Member-wise collection matrix by meeting date',
-            icon: Icons.grid_on_rounded,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text(
-                isMl ? 'മാസം തെരഞ്ഞെടുക്കുക:' : 'Select Month:',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: monthsList.contains(_selectedYearMonth) ? _selectedYearMonth : monthsList.first,
-                    items: monthsList.map((m) {
-                      return DropdownMenuItem<String>(
-                        value: m,
-                        child: Text(
-                          m,
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primary),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedYearMonth = val;
-                        });
-                        vm.fetchMonthlyLedgerReport(val);
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (report == null)
-            const Center(child: CircularProgressIndicator())
-          else ...[
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    isMl ? 'ഈ മാസത്തെ ആകെ പിരിവ്:' : 'Month Grand Total:',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primaryDark),
-                  ),
-                  Text(
-                    '₹${report.grandTotalCollected.toStringAsFixed(2)}',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primaryDark),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.divider),
-                  ),
-                  child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(AppColors.primaryDark),
-                    headingTextStyle: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                    dataTextStyle: GoogleFonts.outfit(fontSize: 13),
-                    columnSpacing: 16,
-                    columns: [
-                      const DataColumn(label: Text('#')),
-                      DataColumn(label: Text(isMl ? 'അംഗത്തിന്റെ പേര്' : 'Member Name')),
-                      ...report.meetingDates.map((d) => DataColumn(
-                            label: Text(
-                              d.length >= 10 ? '${d.substring(8, 10)}/${d.substring(5, 7)}' : d,
-                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                          )),
-                      DataColumn(label: Text(isMl ? 'ആകെ അടവ്' : 'Total Monthly')),
-                      DataColumn(label: Text(isMl ? 'മാസ വരി' : 'Contribution')),
-                      DataColumn(label: Text(isMl ? 'നിക്ഷേപം' : 'Deposit')),
-                      DataColumn(label: Text(isMl ? 'വായ്പ അടവ്' : 'Loan Repay')),
-                      DataColumn(label: Text(isMl ? 'ഫൈൻ' : 'Fine')),
-                      DataColumn(label: Text(isMl ? 'വായ്പ ബാക്കി' : 'Loan Bal')),
-                      DataColumn(label: Text(isMl ? 'നിക്ഷേപ ബാക്കി' : 'Deposit Bal')),
-                    ],
-                    rows: [
-                      ...report.memberRows.map((m) {
-                        return DataRow(
-                          cells: [
-                            DataCell(Text(m.memberNumber, style: GoogleFonts.outfit(fontWeight: FontWeight.bold))),
-                            DataCell(Text(m.fullName, style: GoogleFonts.outfit(fontWeight: FontWeight.w600))),
-                            ...report.meetingDates.map((d) {
-                              final amt = m.meetingCollections[d] ?? 0.0;
-                              return DataCell(
-                                Text(
-                                  amt > 0 ? '₹${amt.toStringAsFixed(0)}' : '-',
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: amt > 0 ? FontWeight.bold : FontWeight.normal,
-                                    color: amt > 0 ? AppColors.textDark : AppColors.textSecondary,
-                                  ),
-                                ),
-                              );
-                            }),
-                            DataCell(Text('₹${m.totalMonthlyCollected.toStringAsFixed(0)}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primary))),
-                            DataCell(Text('₹${m.monthlyContributionSum.toStringAsFixed(0)}')),
-                            DataCell(Text('₹${m.depositSum.toStringAsFixed(0)}')),
-                            DataCell(Text('₹${m.loanRepaymentSum.toStringAsFixed(0)}')),
-                            DataCell(Text('₹${m.fineSum.toStringAsFixed(0)}')),
-                            DataCell(Text('₹${m.currentLoanBalance.toStringAsFixed(0)}', style: GoogleFonts.outfit(color: AppColors.accountLoan, fontWeight: FontWeight.bold))),
-                            DataCell(Text('₹${m.currentDepositBalance.toStringAsFixed(0)}', style: GoogleFonts.outfit(color: AppColors.accountDeposit, fontWeight: FontWeight.bold))),
-                          ],
-                        );
-                      }),
-                      // Summary Row
-                      DataRow(
-                        color: WidgetStateProperty.all(AppColors.primary.withValues(alpha: 0.1)),
-                        cells: [
-                          const DataCell(Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataCell(Text(isMl ? 'ആകെ പിരിവ്' : 'Total Collection', style: const TextStyle(fontWeight: FontWeight.bold))),
-                          ...report.meetingDates.map((d) {
-                            final tot = report.meetingTotals[d] ?? 0.0;
-                            return DataCell(
-                              Text(
-                                '₹${tot.toStringAsFixed(0)}',
-                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primaryDark),
-                              ),
-                            );
-                          }),
-                          DataCell(Text('₹${report.grandTotalCollected.toStringAsFixed(0)}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primaryDark))),
-                          const DataCell(Text('-')),
-                          const DataCell(Text('-')),
-                          const DataCell(Text('-')),
-                          const DataCell(Text('-')),
-                          const DataCell(Text('-')),
-                          const DataCell(Text('-')),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+          Text(label, style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w500)),
+          Text('₹${amount.toStringAsFixed(2)}', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
         ],
       ),
     );

@@ -56,9 +56,10 @@ class LoginScreen extends StatelessWidget {
                       const SizedBox(height: 32),
                       TextField(
                         controller: usernameController,
+                        keyboardType: TextInputType.phone,
                         decoration: const InputDecoration(
-                          labelText: 'Username',
-                          prefixIcon: Icon(Icons.person_outline_rounded),
+                          labelText: 'Mobile Number / Username',
+                          prefixIcon: Icon(Icons.phone_android_rounded),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -84,7 +85,7 @@ class LoginScreen extends StatelessWidget {
                                       final username = usernameController.text.trim();
                                       final password = passwordController.text.trim();
                                       if (username.isEmpty || password.isEmpty) {
-                                        AppSnackbar.showError(context, 'Please enter username and password');
+                                        AppSnackbar.showError(context, 'Please enter mobile number and password');
                                         return;
                                       }
 

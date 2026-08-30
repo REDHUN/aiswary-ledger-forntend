@@ -11,11 +11,14 @@ class SettingsRepository {
     return (response['data'] ?? 0.0).toDouble();
   }
 
-  Future<double> updateSurplusAmount(double amount) async {
+  Future<double> updateSurplusAmount(double amount, {String? description, int? meetingId}) async {
+    final body = <String, dynamic>{'surplusAmount': amount};
+    if (description != null && description.isNotEmpty) body['description'] = description;
+    if (meetingId != null) body['meetingId'] = meetingId;
     final response = await _apiClient.request(
       path: ApiEndpoints.surplusAmount,
       method: RequestType.post,
-      body: {'surplusAmount': amount},
+      body: body,
     );
     return (response['data'] ?? 0.0).toDouble();
   }

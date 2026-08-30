@@ -1,3 +1,4 @@
+import '../core/model/category_report_model.dart';
 import '../core/model/meeting_report_model.dart';
 import '../core/model/monthly_ledger_report_model.dart';
 import 'package:flutter/foundation.dart';
@@ -6,7 +7,39 @@ import '../core/repository/reports_repository.dart';
 import '../core/model/financial_report_model.dart';
 import '../core/model/member_balance_report_model.dart';
 
+import '../core/model/completed_meeting_register_model.dart';
+
 class ReportsViewModel extends ChangeNotifier {
+  CompletedMeetingRegisterModel? _completedRegister;
+  CompletedMeetingRegisterModel? get completedRegister => _completedRegister;
+  final LoadState registerState = LoadState();
+
+  Future<void> fetchCompletedMeetingRegister(int meetingId) async {
+    registerState.loading();
+    notifyListeners();
+    try {
+      _completedRegister = await _repository.getCompletedMeetingRegister(meetingId);
+      registerState.success();
+    } catch (e) {
+      registerState.error(e.toString());
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchMeetings() async {
+    loadState.loading();
+    notifyListeners();
+    try {
+      _meetingReports = await _repository.getAllMeetingReports();
+      loadState.success();
+    } catch (e) {
+      loadState.error(e.toString());
+    } finally {
+      notifyListeners();
+    }
+  }
+
   void selectMeetingReport(MeetingReportModel report) {
     _selectedMeetingReport = report;
     notifyListeners();
@@ -21,6 +54,9 @@ class ReportsViewModel extends ChangeNotifier {
   MeetingReportModel? get selectedMeetingReport => _selectedMeetingReport;
   final ReportsRepository _repository;
   final LoadState loadState = LoadState();
+
+  CategoryReportModel? _categoryReport;
+  CategoryReportModel? get categoryReport => _categoryReport;
 
   FinancialReportModel? _summaryReport;
   FinancialReportModel? get summaryReport => _summaryReport;
@@ -60,6 +96,7 @@ class ReportsViewModel extends ChangeNotifier {
       _summaryReport = await _repository.getFinancialSummary();
       _periodReport = await _repository.getPeriodReport(startDate: _startDate, endDate: _endDate);
       _memberBalances = await _repository.getMemberBalancesReport();
+      _categoryReport = await _repository.getCategoryReport();
       _meetingReports = await _repository.getAllMeetingReports();
       if (_meetingReports.isNotEmpty && _selectedMeetingReport == null) {
         _selectedMeetingReport = _meetingReports.first;

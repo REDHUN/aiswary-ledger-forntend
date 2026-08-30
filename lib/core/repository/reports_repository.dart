@@ -1,3 +1,4 @@
+import '../model/category_report_model.dart';
 import '../model/meeting_report_model.dart';
 import '../model/monthly_ledger_report_model.dart';
 import '../network/api_client.dart';
@@ -5,7 +6,17 @@ import '../network/api_endpoints.dart';
 import '../model/financial_report_model.dart';
 import '../model/member_balance_report_model.dart';
 
+import '../model/completed_meeting_register_model.dart';
+
 class ReportsRepository {
+  Future<CompletedMeetingRegisterModel> getCompletedMeetingRegister(int meetingId) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.meetingRegisterBook(meetingId),
+      method: RequestType.get,
+    );
+    return CompletedMeetingRegisterModel.fromJson(response['data']);
+  }
+
   Future<MonthlyLedgerReportModel> getMonthlyLedgerReport(String yearMonth) async {
     final response = await _apiClient.request(
       path: ApiEndpoints.reportMonthlyLedger(yearMonth),
@@ -58,4 +69,13 @@ class ReportsRepository {
     final data = response['data'] as List? ?? [];
     return data.map((x) => MemberBalanceReportModel.fromJson(x)).toList();
   }
+
+  Future<CategoryReportModel> getCategoryReport() async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.reportCategory,
+      method: RequestType.get,
+    );
+    return CategoryReportModel.fromJson(response['data']);
+  }
+
 }

@@ -1,4 +1,4 @@
-import 'package:ashgledger/core/network/api_client.dart';
+﻿import 'package:ashgledger/core/network/api_client.dart';
 import 'package:ashgledger/core/network/api_endpoints.dart';
 import 'package:ashgledger/core/model/member_model.dart';
 import 'package:ashgledger/core/model/member_account_model.dart';
@@ -109,7 +109,7 @@ class MemberRepository {
       method: RequestType.post,
       body: {
         'amount': amount,
-        'meetingId': meetingId,
+        'meetingId': specialLoanTypeId != null ? null : meetingId,
         'specialLoanTypeId': specialLoanTypeId,
         'description': description,
         'transactionDate': transactionDate,
@@ -136,10 +136,14 @@ class MemberRepository {
     await _apiClient.request(
       path: ApiEndpoints.memberFines(memberId),
       method: RequestType.post,
-      body: {'amount': amount, 'meetingId': meetingId, 'description': description},
+      body: {
+        'amount': amount,
+        'meetingId': null,
+        'description': description,
+        'transactionDate': transactionDate,
+      },
     );
   }
-
   Future<void> addContribution(int memberId, double amount, {int? meetingId, String? description, String? transactionDate}) async {
     await _apiClient.request(
       path: ApiEndpoints.memberContributions(memberId),

@@ -1,3 +1,6 @@
+import 'completed_meeting_register_model.dart';
+import 'group_expense_model.dart';
+
 class MeetingReportModel {
   final int meetingId;
   final int meetingNumber;
@@ -8,11 +11,16 @@ class MeetingReportModel {
   final int totalMembers;
   final double totalCollected;
   final double totalLoanRepayments;
+  final double totalSpecialLoanRepayments;
+  final List<SpecialLoanRegisterItemModel> specialLoanBreakdown;
   final double totalDepositsCollected;
   final double totalFinesCollected;
   final double totalMonthlyContributions;
   final double totalFinancialAid;
   final double totalLoansIssued;
+  final double totalGroupExpenses;
+  final List<GroupExpenseModel> groupExpensesBreakdown;
+  final double surplusAmount;
   final List<MemberMeetingCollectionModel> memberCollections;
 
   MeetingReportModel({
@@ -25,17 +33,28 @@ class MeetingReportModel {
     required this.totalMembers,
     required this.totalCollected,
     required this.totalLoanRepayments,
+    required this.totalSpecialLoanRepayments,
+    required this.specialLoanBreakdown,
     required this.totalDepositsCollected,
     required this.totalFinesCollected,
     required this.totalMonthlyContributions,
     required this.totalFinancialAid,
     required this.totalLoansIssued,
+    required this.totalGroupExpenses,
+    required this.groupExpensesBreakdown,
+    required this.surplusAmount,
     required this.memberCollections,
   });
 
   factory MeetingReportModel.fromJson(Map<String, dynamic> json) {
     var rawList = json['memberCollections'] as List? ?? [];
     var list = rawList.map((x) => MemberMeetingCollectionModel.fromJson(x)).toList();
+
+    var rawSlList = json['specialLoanBreakdown'] as List? ?? [];
+    var slList = rawSlList.map((x) => SpecialLoanRegisterItemModel.fromJson(x)).toList();
+
+    var rawGeList = json['groupExpensesBreakdown'] as List? ?? [];
+    var geList = rawGeList.map((x) => GroupExpenseModel.fromJson(x)).toList();
 
     return MeetingReportModel(
       meetingId: (json['meetingId'] as num?)?.toInt() ?? 0,
@@ -47,11 +66,16 @@ class MeetingReportModel {
       totalMembers: (json['totalMembers'] as num?)?.toInt() ?? 0,
       totalCollected: (json['totalCollected'] as num?)?.toDouble() ?? 0.0,
       totalLoanRepayments: (json['totalLoanRepayments'] as num?)?.toDouble() ?? 0.0,
+      totalSpecialLoanRepayments: (json['totalSpecialLoanRepayments'] as num?)?.toDouble() ?? 0.0,
+      specialLoanBreakdown: slList,
       totalDepositsCollected: (json['totalDepositsCollected'] as num?)?.toDouble() ?? 0.0,
       totalFinesCollected: (json['totalFinesCollected'] as num?)?.toDouble() ?? 0.0,
       totalMonthlyContributions: (json['totalMonthlyContributions'] as num?)?.toDouble() ?? 0.0,
       totalFinancialAid: (json['totalFinancialAid'] as num?)?.toDouble() ?? 0.0,
       totalLoansIssued: (json['totalLoansIssued'] as num?)?.toDouble() ?? 0.0,
+      totalGroupExpenses: (json['totalGroupExpenses'] as num?)?.toDouble() ?? 0.0,
+      groupExpensesBreakdown: geList,
+      surplusAmount: (json['surplusAmount'] as num?)?.toDouble() ?? 0.0,
       memberCollections: list,
     );
   }
@@ -62,6 +86,7 @@ class MemberMeetingCollectionModel {
   final String memberNumber;
   final String fullName;
   final double loanRepayment;
+  final double specialLoanRepayment;
   final double depositAddition;
   final double finePayment;
   final double contributionAddition;
@@ -73,6 +98,7 @@ class MemberMeetingCollectionModel {
     required this.memberNumber,
     required this.fullName,
     required this.loanRepayment,
+    required this.specialLoanRepayment,
     required this.depositAddition,
     required this.finePayment,
     required this.contributionAddition,
@@ -86,6 +112,7 @@ class MemberMeetingCollectionModel {
       memberNumber: json['memberNumber'] ?? '',
       fullName: json['fullName'] ?? '',
       loanRepayment: (json['loanRepayment'] as num?)?.toDouble() ?? 0.0,
+      specialLoanRepayment: (json['specialLoanRepayment'] as num?)?.toDouble() ?? 0.0,
       depositAddition: (json['depositAddition'] as num?)?.toDouble() ?? 0.0,
       finePayment: (json['finePayment'] as num?)?.toDouble() ?? 0.0,
       contributionAddition: (json['contributionAddition'] as num?)?.toDouble() ?? 0.0,

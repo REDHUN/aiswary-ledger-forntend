@@ -2,11 +2,14 @@ class FinancialReportModel {
   final int totalMembers;
   final int activeMembers;
   final double totalOutstandingLoans;
+  final double totalSpecialLoanBalance;
   final double totalDeposits;
   final double totalOutstandingFines;
   final double totalOutstandingFinancialAid;
   final double totalMonthlyContributions;
   final double totalOutstandingInterest;
+  final double totalGroupExpenses;
+  final double surplusAmount;
   final double periodCollections;
   final double periodDisbursals;
   final int totalTransactionsCount;
@@ -17,11 +20,14 @@ class FinancialReportModel {
     required this.totalMembers,
     required this.activeMembers,
     required this.totalOutstandingLoans,
+    required this.totalSpecialLoanBalance,
     required this.totalDeposits,
     required this.totalOutstandingFines,
     required this.totalOutstandingFinancialAid,
     required this.totalMonthlyContributions,
     required this.totalOutstandingInterest,
+    required this.totalGroupExpenses,
+    required this.surplusAmount,
     required this.periodCollections,
     required this.periodDisbursals,
     required this.totalTransactionsCount,
@@ -34,11 +40,14 @@ class FinancialReportModel {
       totalMembers: (json['totalMembers'] as num?)?.toInt() ?? 0,
       activeMembers: (json['activeMembers'] as num?)?.toInt() ?? 0,
       totalOutstandingLoans: (json['totalOutstandingLoans'] as num?)?.toDouble() ?? 0.0,
+      totalSpecialLoanBalance: (json['totalSpecialLoanBalance'] as num?)?.toDouble() ?? 0.0,
       totalDeposits: (json['totalDeposits'] as num?)?.toDouble() ?? 0.0,
       totalOutstandingFines: (json['totalOutstandingFines'] as num?)?.toDouble() ?? 0.0,
       totalOutstandingFinancialAid: (json['totalOutstandingFinancialAid'] as num?)?.toDouble() ?? 0.0,
       totalMonthlyContributions: (json['totalMonthlyContributions'] as num?)?.toDouble() ?? 0.0,
       totalOutstandingInterest: (json['totalOutstandingInterest'] as num?)?.toDouble() ?? 0.0,
+      totalGroupExpenses: (json['totalGroupExpenses'] as num?)?.toDouble() ?? 0.0,
+      surplusAmount: (json['surplusAmount'] as num?)?.toDouble() ?? 0.0,
       periodCollections: (json['periodCollections'] as num?)?.toDouble() ?? 0.0,
       periodDisbursals: (json['periodDisbursals'] as num?)?.toDouble() ?? 0.0,
       totalTransactionsCount: (json['totalTransactionsCount'] as num?)?.toInt() ?? 0,

@@ -1,3 +1,5 @@
+import '../profits/group_profits_screen.dart';
+import '../expenses/group_expenses_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -238,8 +240,8 @@ class _SettingsBody extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Section 3: Group & Fund Management
-          _buildSectionTitle(isMl ? 'ഗ്രൂപ്പും മിച്ച തുകയും (Group & Funds)' : 'Group & Funds'),
+                    // Section 3: Group & Fund Management
+          _buildSectionTitle(isMl ? 'ഗ്രൂപ്പ് & ഫണ്ടുകൾ (Group & Funds)' : 'Group & Funds'),
           const SizedBox(height: 8),
           Card(
             elevation: 0,
@@ -252,16 +254,62 @@ class _SettingsBody extends StatelessWidget {
               children: [
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFECFDF5),
+                    child: Icon(Icons.trending_up_rounded, color: Color(0xFF047857)),
+                  ),
+                  title: Text(
+                    isMl ? 'ഗ്രൂപ്പ് ലാഭങ്ങൾ (Group Profits)' : 'Group Profits',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                  ),
+                  subtitle: Text(
+                    isMl ? 'ഗ്രൂപ്പ് ലാഭ വിവരങ്ങൾ രേഖപ്പെടുത്തുക' : 'Record and view group profits',
+                    style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const GroupProfitsScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 1, indent: 64, color: AppColors.borderLight),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.deepOrange.withValues(alpha: 0.1),
+                    child: const Icon(Icons.receipt_long_rounded, color: Colors.deepOrange),
+                  ),
+                  title: Text(
+                    isMl ? 'ഗ്രൂപ്പ് ചെലവുകൾ (Group Expenses)' : 'Group Expenses',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                  ),
+                  subtitle: Text(
+                    isMl ? 'ഗ്രൂപ്പ് ചെലവുകൾ രേഖപ്പെടുത്തുക' : 'Record and view group expenses',
+                    style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const GroupExpensesScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 1, indent: 64, color: AppColors.borderLight),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   leading: CircleAvatar(
                     backgroundColor: Colors.teal.withValues(alpha: 0.1),
                     child: const Icon(Icons.groups_rounded, color: Colors.teal),
                   ),
                   title: Text(
-                    isMl ? 'ഗ്രൂപ്പ് മാനേജ്മെന്റ് (Group Management)' : 'Group Management',
+                    isMl ? 'ഗ്രൂപ്പ് മാനേജ്‌മെന്റ് (Group Management)' : 'Group Management',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
                   ),
                   subtitle: Text(
-                    isMl ? 'ഗ്രൂപ്പുകൾ ഉണ്ടാക്കുക, വായ്പകൾ നൽകുക' : 'Manage groups & group loans',
+                    isMl ? 'ഗ്രൂപ്പുകളും ഗ്രൂപ്പ് വായ്പകളും മാനേജ് ചെയ്യുക' : 'Manage groups & group loans',
                     style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
                   ),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
@@ -280,11 +328,11 @@ class _SettingsBody extends StatelessWidget {
                     child: Icon(Icons.account_balance_wallet_rounded, color: Colors.amber.shade900),
                   ),
                   title: Text(
-                    isMl ? 'മിച്ച തുക (Surplus Reserve)' : 'Surplus Reserve Fund',
+                    isMl ? 'മിച്ഛത്തുക (Surplus Reserve)' : 'Surplus Reserve Fund',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
                   ),
                   subtitle: Text(
-                    isMl ? 'ഗ്രൂപ്പിന്റെ മിച്ച തുക ചേർക്കുക' : 'Update group surplus reserve amount',
+                    isMl ? 'ഗ്രൂപ്പ് മിച്ഛത്തുക വിവരങ്ങൾ അപ്ഡേറ്റ് ചെയ്യുക' : 'Update group surplus reserve amount',
                     style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
                   ),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
@@ -293,7 +341,7 @@ class _SettingsBody extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+const SizedBox(height: 20),
 
           // Section 4: Application Info
           _buildSectionTitle(isMl ? 'ആപ്പ് വിവരങ്ങൾ (Information)' : 'Information'),

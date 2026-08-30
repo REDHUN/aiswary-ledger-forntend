@@ -82,11 +82,20 @@ class DashboardShimmerLoading extends StatelessWidget {
 
 /// Shimmer Loading Skeleton for MemberListScreen
 class MemberListShimmerLoading extends StatelessWidget {
-  const MemberListShimmerLoading({super.key});
+  final bool shrinkWrap;
+  final ScrollPhysics? physics;
+
+  const MemberListShimmerLoading({
+    super.key,
+    this.shrinkWrap = false,
+    this.physics,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      shrinkWrap: shrinkWrap,
+      physics: physics,
       padding: const EdgeInsets.all(16),
       itemCount: 6,
       itemBuilder: (_, _) => Padding(
@@ -279,6 +288,123 @@ class TransactionListShimmerLoading extends StatelessWidget {
         borderRadius: 16,
         margin: EdgeInsets.only(bottom: 10),
       ),
+    );
+  }
+}
+
+
+/// Shimmer Loading Skeleton for ReportsScreen & Category Reports
+class ReportsDashboardShimmerLoading extends StatelessWidget {
+  const ReportsDashboardShimmerLoading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // KPI Banner Shimmer
+        const AppShimmer(width: double.infinity, height: 110, borderRadius: 20),
+        const SizedBox(height: 16),
+
+        // Grid Metric Shimmers (2x2)
+        Row(
+          children: const [
+            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+            SizedBox(width: 12),
+            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: const [
+            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+            SizedBox(width: 12),
+            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Section Title Shimmer
+        const AppShimmer(width: 180, height: 20, borderRadius: 6),
+        const SizedBox(height: 12),
+
+        // Item Card Shimmers
+        const AppShimmer(width: double.infinity, height: 70, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(width: double.infinity, height: 70, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(width: double.infinity, height: 70, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
+      ],
+    );
+  }
+}
+
+/// Shimmer Loading Skeleton for GroupLoansScreen
+class GroupLoansShimmerLoading extends StatelessWidget {
+  const GroupLoansShimmerLoading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Action Card Shimmer
+        const AppShimmer(width: double.infinity, height: 70, borderRadius: 16),
+        const SizedBox(height: 20),
+
+        // Title Shimmer
+        const AppShimmer(width: 170, height: 20, borderRadius: 6),
+        const SizedBox(height: 12),
+
+        // 4 Group Loan History Cards
+        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
+        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
+        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
+        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
+      ],
+    );
+  }
+}
+
+/// Shimmer Loading Skeleton for MemberPortalScreen
+class MemberPortalShimmerLoading extends StatelessWidget {
+  const MemberPortalShimmerLoading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Member Profile Banner Shimmer
+        const AppShimmer(width: double.infinity, height: 100, borderRadius: 20),
+        const SizedBox(height: 20),
+
+        // Title Shimmer
+        const AppShimmer(width: 160, height: 20, borderRadius: 6),
+        const SizedBox(height: 12),
+
+        // Grid Account Cards
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 1.4,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: 4,
+          itemBuilder: (_, _) => const AppShimmer(width: double.infinity, height: 85, borderRadius: 16),
+        ),
+        const SizedBox(height: 20),
+
+        // Activity Title Shimmer
+        const AppShimmer(width: 180, height: 20, borderRadius: 6),
+        const SizedBox(height: 12),
+
+        // Activity Tile Shimmers
+        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
+      ],
     );
   }
 }

@@ -1,39 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/common/app_shimmer.dart';
+import '../../core/common/common_error_widget.dart';
 import '../../core/localization/app_localizations.dart';
-import '../../core/di/service_locator.dart';
-import '../../viewmodel/expense_viewmodel.dart';
-import 'add_group_expense_dialog.dart';
+import '../../viewmodel/group_profit_viewmodel.dart';
+import 'add_group_profit_dialog.dart';
 
-class GroupExpensesScreen extends StatelessWidget {
-  const GroupExpensesScreen({super.key});
+class GroupProfitsScreen extends StatefulWidget {
+  const GroupProfitsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => sl<ExpenseViewModel>()..fetchGroupExpenses(),
-      child: const _GroupExpensesBody(),
-    );
-  }
+  State<GroupProfitsScreen> createState() => _GroupProfitsScreenState();
 }
 
-class _GroupExpensesBody extends StatelessWidget {
-  const _GroupExpensesBody();
+class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<GroupProfitViewModel>().fetchGroupProfits();
+    });
+  }
 
-  void _openAddExpenseDialog(BuildContext context) {
-    final expenseVm = context.read<ExpenseViewModel>();
+  void _openAddProfitDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => ChangeNotifierProvider.value(
-        value: expenseVm,
-        child: const AddGroupExpenseDialog(),
-      ),
-    ).then((_) {
-      if (context.mounted) {
-        context.read<ExpenseViewModel>().fetchGroupExpenses();
+      builder: (_) => const AddGroupProfitDialog(),
+    ).then((val) {
+      if (val == true && context.mounted) {
+        context.read<GroupProfitViewModel>().fetchGroupProfits();
       }
     });
   }
@@ -44,59 +41,63 @@ class _GroupExpensesBody extends StatelessWidget {
     final isMl = l10n.locale.languageCode == 'ml';
 
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
       appBar: AppBar(
         title: Text(
-          isMl ? 'ഗ്രൂപ്പ് ചെലവുകൾ' : 'Group Expenses',
+          isMl ? 'ഗ്രൂപ്പ് ലാഭങ്ങൾ' : 'Group Profits',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => context.read<ExpenseViewModel>().fetchGroupExpenses(),
+            icon: const Icon(Icons.add_circle_outline_rounded),
+            onPressed: () => _openAddProfitDialog(context),
+            tooltip: isMl ? 'ലാഭം രേഖപ്പെടുത്തുക' : 'Record Profit',
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
+        backgroundColor: const Color(0xFF047857),
         foregroundColor: Colors.white,
-        onPressed: () => _openAddExpenseDialog(context),
+        onPressed: () => _openAddProfitDialog(context),
         icon: const Icon(Icons.add_rounded),
         label: Text(
-          isMl ? 'ചെലവ് ചേർക്കുക' : 'Record Expense',
+          isMl ? 'ലാഭം ലഭിച്ചു' : 'Add Profit',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
       ),
-      body: Consumer<ExpenseViewModel>(
+      body: Consumer<GroupProfitViewModel>(
         builder: (context, vm, _) {
-          if (vm.loadState.isLoading && vm.groupExpenses.isEmpty) {
+          if (vm.loadState.isLoading && vm.groupProfits.isEmpty) {
             return const MemberListShimmerLoading();
           }
 
-          final expenses = vm.groupExpenses;
-          final totalExpenseAmount = expenses.fold(0.0, (sum, item) => sum + item.amount);
+          if (vm.loadState.hasError && vm.groupProfits.isEmpty) {
+            return CommonErrorWidget(
+              message: vm.loadState.message ?? (isMl ? 'ഡാറ്റ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല' : 'Failed to load group profits'),
+              onRetry: () => vm.fetchGroupProfits(),
+            );
+          }
+
+          final profits = vm.groupProfits;
+          final totalProfitAmount = profits.fold<double>(0, (sum, item) => sum + item.amount);
 
           return RefreshIndicator(
-            onRefresh: () => vm.fetchGroupExpenses(),
+            onRefresh: () => vm.fetchGroupProfits(),
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Total Expenses Summary Banner
+                // Total Summary Card
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppColors.primaryDark, AppColors.primary],
+                      colors: [Color(0xFF047857), Color(0xFF10B981)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
+                        color: const Color(0xFF047857).withValues(alpha: 0.25),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -104,10 +105,10 @@ class _GroupExpensesBody extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 26,
                         backgroundColor: Colors.white24,
-                        child: const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 28),
+                        child: Icon(Icons.trending_up_rounded, color: Colors.white, size: 28),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -115,12 +116,12 @@ class _GroupExpensesBody extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isMl ? 'ആകെ ഗ്രൂപ്പ് ചെലവുകൾ' : 'Total Group Expenses',
+                              isMl ? 'മൊത്തം ഗ്രൂപ്പ് ലാഭങ്ങൾ' : 'Total Group Profits',
                               style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '₹${totalExpenseAmount.toStringAsFixed(2)}',
+                              '₹${totalProfitAmount.toStringAsFixed(2)}',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -140,22 +141,22 @@ class _GroupExpensesBody extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      isMl ? 'ചെലവ് രേഖകൾ (${expenses.length})' : 'Recorded Expenses (${expenses.length})',
+                      isMl ? 'രേഖപ്പെടുത്തിയ ലാഭങ്ങൾ (${profits.length})' : 'Recorded Profits (${profits.length})',
                       style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
                     ),
                     TextButton.icon(
-                      onPressed: () => _openAddExpenseDialog(context),
-                      icon: const Icon(Icons.add_circle_outline_rounded, size: 18, color: AppColors.primary),
+                      onPressed: () => _openAddProfitDialog(context),
+                      icon: const Icon(Icons.add_circle_outline_rounded, size: 18, color: Color(0xFF047857)),
                       label: Text(
                         isMl ? 'പുതിയത്' : 'New',
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF047857)),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
 
-                if (expenses.isEmpty)
+                if (profits.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(32),
                     alignment: Alignment.center,
@@ -166,21 +167,21 @@ class _GroupExpensesBody extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        Icon(Icons.receipt_outlined, size: 54, color: Colors.grey.shade300),
+                        Icon(Icons.trending_up_rounded, size: 54, color: Colors.grey.shade300),
                         const SizedBox(height: 12),
                         Text(
-                          isMl ? 'ഗ്രൂപ്പ് ചെലവുകളൊന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.' : 'No group expenses recorded yet.',
+                          isMl ? 'ഗ്രൂപ്പ് ലാഭങ്ങൾ ഇതുവരെ രേഖപ്പെടുത്തിയിട്ടില്ല.' : 'No group profits recorded yet.',
                           style: GoogleFonts.outfit(fontSize: 15, color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: const Color(0xFF047857),
                             foregroundColor: Colors.white,
                           ),
-                          onPressed: () => _openAddExpenseDialog(context),
+                          onPressed: () => _openAddProfitDialog(context),
                           icon: const Icon(Icons.add_rounded),
-                          label: Text(isMl ? 'ചെലവ് ചേർക്കുക' : 'Record Expense'),
+                          label: Text(isMl ? 'ലാഭം രേഖപ്പെടുത്തുക' : 'Record Profit'),
                         ),
                       ],
                     ),
@@ -189,10 +190,10 @@ class _GroupExpensesBody extends StatelessWidget {
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: expenses.length,
+                    itemCount: profits.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
-                      final item = expenses[index];
+                      final item = profits[index];
                       return Card(
                         elevation: 0,
                         color: Colors.white,
@@ -204,9 +205,9 @@ class _GroupExpensesBody extends StatelessWidget {
                           padding: const EdgeInsets.all(14),
                           child: Row(
                             children: [
-                              CircleAvatar(
-                                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                                child: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
+                              const CircleAvatar(
+                                backgroundColor: Color(0xFFECFDF5),
+                                child: Icon(Icons.trending_up_rounded, color: Color(0xFF047857)),
                               ),
                               const SizedBox(width: 14),
                               Expanded(
@@ -214,7 +215,7 @@ class _GroupExpensesBody extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item.expenseTypeName,
+                                      item.title,
                                       style: GoogleFonts.outfit(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15,
@@ -223,7 +224,7 @@ class _GroupExpensesBody extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      isMl ? 'തീയതി: ${item.expenseDate}' : 'Date: ${item.expenseDate}',
+                                      isMl ? 'തീയതി: ${item.profitDate}' : 'Date: ${item.profitDate}',
                                       style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
                                     ),
                                     if (item.description != null && item.description!.isNotEmpty) ...[
@@ -237,11 +238,11 @@ class _GroupExpensesBody extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '₹${item.amount.toStringAsFixed(2)}',
+                                '+₹${item.amount.toStringAsFixed(2)}',
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: AppColors.textDark,
+                                  color: const Color(0xFF047857),
                                 ),
                               ),
                             ],
