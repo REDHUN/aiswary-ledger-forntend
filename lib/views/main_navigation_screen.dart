@@ -41,45 +41,7 @@ class MainNavigationScreen extends StatelessWidget {
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.analytics_rounded),
-                tooltip: l10n.locale.languageCode == 'ml' ? 'റിപ്പോർട്ടുകൾ' : 'Reports',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ReportsScreen()),
-                  );
-                },
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.language_rounded),
-                tooltip: l10n.translate('language'),
-                onSelected: (langCode) {
-                  context.read<LanguageViewModel>().setLanguage(langCode);
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'ml',
-                    child: Row(
-                      children: [
-                        if (langVm.isMalayalam) const Icon(Icons.check_rounded, color: AppColors.primary, size: 18),
-                        if (langVm.isMalayalam) const SizedBox(width: 6),
-                        Text('മലയാളം', style: TextStyle(fontWeight: langVm.isMalayalam ? FontWeight.bold : FontWeight.normal)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'en',
-                    child: Row(
-                      children: [
-                        if (!langVm.isMalayalam) const Icon(Icons.check_rounded, color: AppColors.primary, size: 18),
-                        if (!langVm.isMalayalam) const SizedBox(width: 6),
-                        Text('English', style: TextStyle(fontWeight: !langVm.isMalayalam ? FontWeight.bold : FontWeight.normal)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+
               IconButton(
                 icon: const Icon(Icons.logout_rounded),
                 tooltip: 'Logout',
@@ -92,7 +54,7 @@ class MainNavigationScreen extends StatelessWidget {
                     );
                   }
                 },
-              )
+              ),
             ],
           ),
           body: IndexedStack(
@@ -106,7 +68,9 @@ class MainNavigationScreen extends StatelessWidget {
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: const Border(top: BorderSide(color: AppColors.borderLight)),
+              border: const Border(
+                top: BorderSide(color: AppColors.borderLight),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.06),
@@ -132,18 +96,36 @@ class MainNavigationScreen extends StatelessWidget {
               elevation: 0,
               destinations: [
                 NavigationDestination(
-                  icon: const Icon(Icons.grid_view_outlined, color: AppColors.textSecondary),
-                  selectedIcon: const Icon(Icons.grid_view_rounded, color: AppColors.primaryDark),
+                  icon: const Icon(
+                    Icons.grid_view_outlined,
+                    color: AppColors.textSecondary,
+                  ),
+                  selectedIcon: const Icon(
+                    Icons.grid_view_rounded,
+                    color: AppColors.primaryDark,
+                  ),
                   label: l10n.dashboard,
                 ),
                 NavigationDestination(
-                  icon: const Icon(Icons.group_outlined, color: AppColors.textSecondary),
-                  selectedIcon: const Icon(Icons.group_rounded, color: AppColors.primaryDark),
+                  icon: const Icon(
+                    Icons.group_outlined,
+                    color: AppColors.textSecondary,
+                  ),
+                  selectedIcon: const Icon(
+                    Icons.group_rounded,
+                    color: AppColors.primaryDark,
+                  ),
                   label: l10n.members,
                 ),
                 NavigationDestination(
-                  icon: const Icon(Icons.event_note_outlined, color: AppColors.textSecondary),
-                  selectedIcon: const Icon(Icons.event_available_rounded, color: AppColors.primaryDark),
+                  icon: const Icon(
+                    Icons.event_note_outlined,
+                    color: AppColors.textSecondary,
+                  ),
+                  selectedIcon: const Icon(
+                    Icons.event_available_rounded,
+                    color: AppColors.primaryDark,
+                  ),
                   label: l10n.meetings,
                 ),
               ],

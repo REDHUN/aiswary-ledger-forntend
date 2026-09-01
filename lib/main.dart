@@ -17,6 +17,8 @@ import 'package:ashgledger/views/auth/login_screen.dart';
 import 'package:ashgledger/views/main_navigation_screen.dart';
 import 'package:ashgledger/views/member_portal/member_portal_screen.dart';
 
+import 'package:ashgledger/views/splash/splash_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupLocator();
@@ -57,7 +59,7 @@ class AiswaryaLedgerApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: const AuthWrapper(),
+            home: const SplashScreen(),
           );
         },
       ),

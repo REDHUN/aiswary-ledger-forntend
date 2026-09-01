@@ -13,7 +13,7 @@ class AppLocalizations {
   static final Map<String, Map<String, String>> _localizedValues = {
     'ml': {
       // General & Navigation
-      'app_title': 'ഐശ്വര്യ സംഘം ലെഡ്ജർ',
+      'app_title': 'ഐശ്വര്യ  സ്വയം  സഹായക  സംഘം  ലെഡ്ജർ',
       'dashboard': 'ഡാഷ്‌ബോർഡ്',
       'members': 'അംഗങ്ങൾ',
       'meetings': 'യോഗങ്ങൾ',
@@ -29,6 +29,9 @@ class AppLocalizations {
       'view_all': 'എല്ലാം കാണുക',
       'previous': 'മുമ്പത്തേത്',
       'next': 'അടുത്തത്',
+      'surplus_fund': 'മിച്ച തുക',
+      'total_loans': 'ആകെ  ലോൺ ',
+      'total_fines': 'ആകെ  ഫൈൻ',
 
       // Dashboard
       'overview_title': 'ഐശ്വര്യ സംഘം അവലോകനം',

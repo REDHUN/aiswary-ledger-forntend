@@ -31,9 +31,7 @@ class MemberDetailScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.translate('member_details')),
-      ),
+      appBar: AppBar(title: Text(l10n.translate('member_details'))),
       body: Consumer<MemberViewModel>(
         builder: (context, vm, _) {
           if (vm.loadState.isLoading || vm.selectedMember == null) {
@@ -49,7 +47,8 @@ class MemberDetailScreen extends StatelessWidget {
           final member = vm.selectedMember!;
 
           return RefreshIndicator(
-            onRefresh: () => context.read<MemberViewModel>().loadMemberDetail(memberId),
+            onRefresh: () =>
+                context.read<MemberViewModel>().loadMemberDetail(memberId),
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -58,7 +57,13 @@ class MemberDetailScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(l10n.translate('account_balances'), style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(
+                      l10n.translate('account_balances'),
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     _buildActionMenu(context, member, l10n),
                   ],
                 ),
@@ -67,7 +72,9 @@ class MemberDetailScreen extends StatelessWidget {
                   selector: (_, vm) => vm.accounts,
                   builder: (context, accounts, _) {
                     return Column(
-                      children: accounts.map((acc) => _buildAccountTile(acc, l10n)).toList(),
+                      children: accounts
+                          .map((acc) => _buildAccountTile(acc, l10n))
+                          .toList(),
                     );
                   },
                 ),
@@ -78,7 +85,11 @@ class MemberDetailScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         l10n.translate('transaction_history'),
-                        style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -86,20 +97,33 @@ class MemberDetailScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     TextButton.icon(
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => TransactionListScreen(initialQuery: member.memberNumber),
+                            builder: (_) => TransactionListScreen(
+                              initialQuery: member.memberNumber,
+                            ),
                           ),
                         );
                       },
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.primary),
+                      icon: const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
                       label: Text(
                         l10n.translate('view_all'),
-                        style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                   ],
@@ -109,10 +133,17 @@ class MemberDetailScreen extends StatelessWidget {
                   selector: (_, vm) => vm.transactions,
                   builder: (context, transactions, _) {
                     if (transactions.isEmpty) {
-                      return Center(child: Padding(padding: const EdgeInsets.all(16), child: Text(l10n.translate('no_transactions'))));
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(l10n.translate('no_transactions')),
+                        ),
+                      );
                     }
                     return Column(
-                      children: transactions.map((tx) => _buildTxTile(context, tx, l10n)).toList(),
+                      children: transactions
+                          .map((tx) => _buildTxTile(context, tx, l10n))
+                          .toList(),
                     );
                   },
                 ),
@@ -124,7 +155,11 @@ class MemberDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, MemberModel member, AppLocalizations l10n) {
+  Widget _buildProfileHeader(
+    BuildContext context,
+    MemberModel member,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -145,7 +180,11 @@ class MemberDetailScreen extends StatelessWidget {
             backgroundColor: Colors.white24,
             child: Text(
               member.memberNumber,
-              style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -155,7 +194,11 @@ class MemberDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   member.fullName,
-                  style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -169,7 +212,9 @@ class MemberDetailScreen extends StatelessWidget {
             style: IconButton.styleFrom(
               backgroundColor: Colors.white.withValues(alpha: 0.2),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             icon: const Icon(Icons.edit_rounded, size: 20),
             tooltip: l10n.translate('edit_profile'),
@@ -185,7 +230,11 @@ class MemberDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionMenu(BuildContext context, MemberModel member, AppLocalizations l10n) {
+  Widget _buildActionMenu(
+    BuildContext context,
+    MemberModel member,
+    AppLocalizations l10n,
+  ) {
     return PopupMenuButton<String>(
       icon: Container(
         padding: const EdgeInsets.all(8),
@@ -193,7 +242,11 @@ class MemberDetailScreen extends StatelessWidget {
           color: AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.tune_rounded, color: AppColors.primary, size: 20),
+        child: const Icon(
+          Icons.tune_rounded,
+          color: AppColors.primary,
+          size: 20,
+        ),
       ),
       elevation: 4,
       shadowColor: Colors.black26,
@@ -201,12 +254,74 @@ class MemberDetailScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: Colors.white,
       onSelected: (value) {
-        if (value == 'DEPOSIT') _showAmountDialog(context, member.id, l10n.translate('add_deposit'), (amt, dt) => context.read<MemberViewModel>().addDeposit(member.id, amt, transactionDate: dt));
-        if (value == 'LOAN') _showAmountDialog(context, member.id, l10n.translate('issue_loan'), (amt, dt) => context.read<MemberViewModel>().issueLoan(member.id, amt, transactionDate: dt));
-        if (value == 'FINE') _showAmountDialog(context, member.id, l10n.translate('add_fine'), (amt, dt) => context.read<MemberViewModel>().addFine(member.id, amt, transactionDate: dt));
-        if (value == 'CONTRIBUTION') _showAmountDialog(context, member.id, l10n.translate('add_contribution'), (amt, dt) => context.read<MemberViewModel>().addContribution(member.id, amt, transactionDate: dt));
-        if (value == 'AID') _showAmountDialog(context, member.id, l10n.translate('add_aid'), (amt, dt) => context.read<MemberViewModel>().addFinancialAid(member.id, amt, transactionDate: dt));
-        if (value == 'SPECIAL_LOAN') _showIssueSpecialLoanDialog(context, member.id, l10n);
+        if (value == 'DEPOSIT')
+          _showAmountDialog(
+            context,
+            member.id,
+            l10n.translate('add_deposit'),
+            (amt, dt, description) =>
+                context.read<MemberViewModel>().addDeposit(
+                  member.id,
+                  amt,
+                  transactionDate: dt,
+                  description: description,
+                ),
+          );
+        if (value == 'LOAN')
+          _showAmountDialog(
+            context,
+            member.id,
+            l10n.translate('issue_loan'),
+            (amt, dt, description) => context.read<MemberViewModel>().issueLoan(
+              member.id,
+              amt,
+              transactionDate: dt,
+              description: description,
+            ),
+          );
+        if (value == 'FINE')
+          _showAmountDialog(
+            context,
+            member.id,
+            l10n.translate('add_fine'),
+            (amt, dt, description) => context.read<MemberViewModel>().addFine(
+              member.id,
+              amt,
+              transactionDate: dt,
+              description: description,
+            ),
+          );
+        if (value == 'CONTRIBUTION')
+          _showAmountDialog(
+            context,
+            member.id,
+            l10n.translate('add_contribution'),
+            (amt, dt, description) =>
+                context.read<MemberViewModel>().addContribution(
+                  member.id,
+                  amt,
+                  transactionDate: dt,
+                  description: description,
+                ),
+          );
+        if (value == 'AID') {
+          _showAmountDialog(
+            context,
+            member.id,
+            l10n.translate('add_aid'),
+            (amt, dt, description) =>
+                context.read<MemberViewModel>().addFinancialAid(
+                  member.id,
+                  amt,
+                  transactionDate: dt,
+                  description: description == ""
+                      ? "FictionalAid : ${member.fullName}"
+                      : description,
+                ),
+          );
+        }
+        if (value == 'SPECIAL_LOAN')
+          _showIssueSpecialLoanDialog(context, member.id, l10n);
       },
       itemBuilder: (context) => [
         _buildMenuItem(
@@ -235,7 +350,9 @@ class MemberDetailScreen extends StatelessWidget {
         ),
         _buildMenuItem(
           value: 'SPECIAL_LOAN',
-          title: l10n.locale.languageCode == 'ml' ? 'സ്പെഷ്യൽ വായ്പ നൽകുക' : 'Issue Special Loan',
+          title: l10n.locale.languageCode == 'ml'
+              ? 'സ്പെഷ്യൽ വായ്പ നൽകുക'
+              : 'Issue Special Loan',
           icon: Icons.assignment_rounded,
           color: Colors.deepOrange,
         ),
@@ -291,16 +408,21 @@ class MemberDetailScreen extends StatelessWidget {
     if (acc.accountType == 'LOAN') color = AppColors.accountLoan;
     if (acc.accountType == 'DEPOSIT') color = AppColors.accountDeposit;
     if (acc.accountType == 'FINE') color = AppColors.accountFine;
-    if (acc.accountType == 'FINANCIAL_AID') color = AppColors.accountFinancialAid;
-    if (acc.accountType == 'MONTHLY_CONTRIBUTION') color = AppColors.accountContribution;
+    if (acc.accountType == 'FINANCIAL_AID')
+      color = AppColors.accountFinancialAid;
+    if (acc.accountType == 'MONTHLY_CONTRIBUTION')
+      color = AppColors.accountContribution;
     if (acc.accountType == 'INTEREST') color = AppColors.accountInterest;
     if (acc.accountType == 'SPECIAL_LOAN') color = Colors.deepOrange;
 
     String title = l10n.translate(acc.accountType);
     if (acc.accountType == 'SPECIAL_LOAN') {
-      title = acc.specialLoanTypeName != null && acc.specialLoanTypeName!.isNotEmpty
+      title =
+          acc.specialLoanTypeName != null && acc.specialLoanTypeName!.isNotEmpty
           ? acc.specialLoanTypeName!
-          : (l10n.locale.languageCode == 'ml' ? 'സ്പെഷ്യൽ വായ്പ' : 'Special Loan');
+          : (l10n.locale.languageCode == 'ml'
+                ? 'സ്പെഷ്യൽ വായ്പ'
+                : 'Special Loan');
     }
 
     return Card(
@@ -310,41 +432,69 @@ class MemberDetailScreen extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: color.withValues(alpha: 0.12),
           child: Icon(
-            acc.accountType == 'SPECIAL_LOAN' ? Icons.assignment_rounded : Icons.account_balance_wallet_rounded,
+            acc.accountType == 'SPECIAL_LOAN'
+                ? Icons.assignment_rounded
+                : Icons.account_balance_wallet_rounded,
             color: color,
             size: 20,
           ),
         ),
-        title: Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15)),
+        title: Text(
+          title,
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
         subtitle: acc.accountType == 'SPECIAL_LOAN'
             ? Text(
-                l10n.locale.languageCode == 'ml' ? 'സ്പെഷ്യൽ വായ്പ' : 'Special Loan Account',
-                style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                l10n.locale.languageCode == 'ml'
+                    ? 'സ്പെഷ്യൽ വായ്പ'
+                    : 'Special Loan Account',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
               )
             : null,
         trailing: Text(
           '₹${acc.currentBalance.toStringAsFixed(2)}',
-          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+          style: GoogleFonts.outfit(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
       ),
     );
   }
 
-
-  Widget _buildTxTile(BuildContext context, FinancialTransactionModel tx, AppLocalizations l10n) {
+  Widget _buildTxTile(
+    BuildContext context,
+    FinancialTransactionModel tx,
+    AppLocalizations l10n,
+  ) {
     Color typeColor = AppColors.primary;
     if (tx.accountType == 'LOAN') typeColor = AppColors.accountLoan;
     if (tx.accountType == 'DEPOSIT') typeColor = AppColors.accountDeposit;
     if (tx.accountType == 'FINE') typeColor = AppColors.accountFine;
-    if (tx.accountType == 'FINANCIAL_AID') typeColor = AppColors.accountFinancialAid;
-    if (tx.accountType == 'MONTHLY_CONTRIBUTION') typeColor = AppColors.accountContribution;
+    if (tx.accountType == 'FINANCIAL_AID')
+      typeColor = AppColors.accountFinancialAid;
+    if (tx.accountType == 'MONTHLY_CONTRIBUTION')
+      typeColor = AppColors.accountContribution;
     if (tx.accountType == 'INTEREST') typeColor = AppColors.accountInterest;
 
     final isReversal = tx.transactionType == 'REVERSAL' || tx.isReversed;
-    final formattedType = AppFormatters.formatTransactionType(tx.transactionType, l10n);
-    final formattedAccount = AppFormatters.formatAccountType(tx.accountType, l10n);
+    final formattedType = AppFormatters.formatTransactionType(
+      tx.transactionType,
+      l10n,
+    );
+    final formattedAccount = AppFormatters.formatAccountType(
+      tx.accountType,
+      l10n,
+    );
     final formattedDate = AppFormatters.formatDateTime(tx.createdAt);
-    final formattedDescription = AppFormatters.formatDescription(tx.description, l10n);
+    final formattedDescription = AppFormatters.formatDescription(
+      tx.description,
+      l10n,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -357,7 +507,7 @@ class MemberDetailScreen extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Padding(
@@ -369,7 +519,10 @@ class MemberDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: typeColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
@@ -428,11 +581,18 @@ class MemberDetailScreen extends StatelessWidget {
                     onTap: () => _showReverseDialog(context, tx),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 4,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.undo_rounded, size: 14, color: AppColors.error),
+                          const Icon(
+                            Icons.undo_rounded,
+                            size: 14,
+                            color: AppColors.error,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             l10n.translate('reverse_action'),
@@ -453,7 +613,10 @@ class MemberDetailScreen extends StatelessWidget {
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.bgLight,
                   borderRadius: BorderRadius.circular(8),
@@ -469,7 +632,7 @@ class MemberDetailScreen extends StatelessWidget {
                   maxLines: 2,
                 ),
               ),
-            ]
+            ],
           ],
         ),
       ),
@@ -479,20 +642,29 @@ class MemberDetailScreen extends StatelessWidget {
   void _showReverseDialog(BuildContext context, FinancialTransactionModel tx) {
     final reasonCtrl = TextEditingController();
     final l10n = AppLocalizations.of(context);
-    final accountTypeLabel = AppFormatters.formatAccountType(tx.accountType, l10n);
+    final accountTypeLabel = AppFormatters.formatAccountType(
+      tx.accountType,
+      l10n,
+    );
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('${l10n.translate('reverse_transaction_title')} #${tx.id}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(
+          '${l10n.translate('reverse_transaction_title')} #${tx.id}',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '${l10n.translate('reverse_transaction_title')}: $accountTypeLabel (₹${tx.amount.toStringAsFixed(2)})',
-              style: GoogleFonts.outfit(fontSize: 13, color: AppColors.textSecondary),
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -508,40 +680,60 @@ class MemberDetailScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.translate('cancel'), style: GoogleFonts.outfit(color: AppColors.textSecondary)),
+            child: Text(
+              l10n.translate('cancel'),
+              style: GoogleFonts.outfit(color: AppColors.textSecondary),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () async {
               final reason = reasonCtrl.text.trim();
               if (reason.isEmpty) return;
               Navigator.pop(dialogContext);
 
-              final success = await context.read<MemberViewModel>().reverseTransaction(tx.memberId, tx.id, reason);
+              final success = await context
+                  .read<MemberViewModel>()
+                  .reverseTransaction(tx.memberId, tx.id, reason);
               if (context.mounted) {
                 if (success) {
-                  AppSnackbar.showSuccess(context, 'Transaction #${tx.id} reversed successfully!');
+                  AppSnackbar.showSuccess(
+                    context,
+                    'Transaction #${tx.id} reversed successfully!',
+                  );
                 } else {
                   AppSnackbar.showError(
                     context,
-                    context.read<MemberViewModel>().actionState.message ?? 'Reversal failed',
+                    context.read<MemberViewModel>().actionState.message ??
+                        'Reversal failed',
                   );
                 }
               }
             },
-            child: Text(l10n.translate('reverse_action'), style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text(
+              l10n.translate('reverse_action'),
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showAmountDialog(BuildContext context, int memberId, String title, Future<bool> Function(double, String) action) {
+  void _showAmountDialog(
+    BuildContext context,
+    int memberId,
+    String title,
+    Future<bool> Function(double, String, String) action,
+  ) {
     final amountCtrl = TextEditingController();
+    final descriptionCtrl = TextEditingController();
     DateTime selectedDate = DateTime.now();
     final l10n = AppLocalizations.of(context);
 
@@ -549,17 +741,25 @@ class MemberDetailScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final dateStr = "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
+          final dateStr =
+              "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
 
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              title,
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: amountCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Amount (₹)',
                     prefixIcon: Icon(Icons.payments_rounded),
@@ -585,26 +785,54 @@ class MemberDetailScreen extends StatelessWidget {
                       labelText: 'Transaction Date',
                       suffixIcon: Icon(Icons.calendar_month_rounded),
                     ),
-                    child: Text(dateStr, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600)),
+                    child: Text(
+                      dateStr,
+                      style: GoogleFonts.outfit(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: descriptionCtrl,
+                  keyboardType: TextInputType.text,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    prefixIcon: Icon(Icons.description_rounded),
                   ),
                 ),
               ],
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.translate('cancel'))),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(l10n.translate('cancel')),
+              ),
               ElevatedButton(
                 onPressed: () async {
                   final amount = double.tryParse(amountCtrl.text);
                   if (amount == null || amount <= 0) return;
-                  final formattedDate = "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
-                  final success = await action(amount, formattedDate);
+                  final formattedDate =
+                      "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
+                  final success = await action(
+                    amount,
+                    formattedDate,
+                    descriptionCtrl.text,
+                  );
                   if (dialogContext.mounted) {
-                    if (success) AppSnackbar.showSuccess(dialogContext, '$title Recorded!');
+                    if (success)
+                      AppSnackbar.showSuccess(
+                        dialogContext,
+                        '$title Recorded!',
+                      );
                     Navigator.pop(dialogContext);
                   }
                 },
                 child: Text(l10n.translate('save')),
-              )
+              ),
             ],
           );
         },
@@ -613,106 +841,133 @@ class MemberDetailScreen extends StatelessWidget {
   }
 }
 
+void _showIssueSpecialLoanDialog(
+  BuildContext context,
+  int memberId,
+  AppLocalizations l10n,
+) {
+  final isMl = l10n.locale.languageCode == 'ml';
+  final amountCtrl = TextEditingController();
+  final notesCtrl = TextEditingController();
+  DateTime selectedDate = DateTime.now();
+  SpecialLoanTypeModel? selectedType;
 
-  void _showIssueSpecialLoanDialog(BuildContext context, int memberId, AppLocalizations l10n) {
-    final isMl = l10n.locale.languageCode == 'ml';
-    final amountCtrl = TextEditingController();
-    final notesCtrl = TextEditingController();
-    DateTime selectedDate = DateTime.now();
-    SpecialLoanTypeModel? selectedType;
+  showDialog(
+    context: context,
+    builder: (dialogContext) => ChangeNotifierProvider(
+      create: (_) => sl<SettingsViewModel>()..fetchSpecialLoanTypes(),
+      child: Consumer<SettingsViewModel>(
+        builder: (context, vm, _) {
+          final activeTypes = vm.specialLoanTypes
+              .where((t) => t.isActive)
+              .toList();
+          if (activeTypes.isNotEmpty && selectedType == null) {
+            selectedType = activeTypes.first;
+          }
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) => ChangeNotifierProvider(
-        create: (_) => sl<SettingsViewModel>()..fetchSpecialLoanTypes(),
-        child: Consumer<SettingsViewModel>(
-          builder: (context, vm, _) {
-            final activeTypes = vm.specialLoanTypes.where((t) => t.isActive).toList();
-            if (activeTypes.isNotEmpty && selectedType == null) {
-              selectedType = activeTypes.first;
-            }
-
-            return StatefulBuilder(
-              builder: (ctx, setState) => AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                title: Text(
-                  isMl ? 'സ്പെഷ്യൽ വായ്പ നൽകുക' : 'Issue Special Loan',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (activeTypes.isEmpty)
-                      Text(
-                        isMl ? 'സെറ്റിംഗ്സിൽ സ്പെഷ്യൽ വായ്പ തരങ്ങൾ ചേർക്കുക.' : 'Please add special loan types in Settings first.',
-                        style: GoogleFonts.outfit(color: Colors.red),
-                      )
-                    else
-                      DropdownButtonFormField<SpecialLoanTypeModel>(
-                        initialValue: selectedType,
-                        decoration: InputDecoration(
-                          labelText: isMl ? 'വായ്പ തരം' : 'Loan Type',
-                          border: const OutlineInputBorder(),
-                        ),
-                        items: activeTypes.map((t) {
-                          return DropdownMenuItem<SpecialLoanTypeModel>(
-                            value: t,
-                            child: Text(t.name, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-                          );
-                        }).toList(),
-                        onChanged: (val) => setState(() => selectedType = val),
-                      ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: amountCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          return StatefulBuilder(
+            builder: (ctx, setState) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                isMl ? 'സ്പെഷ്യൽ വായ്പ നൽകുക' : 'Issue Special Loan',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (activeTypes.isEmpty)
+                    Text(
+                      isMl
+                          ? 'സെറ്റിംഗ്സിൽ സ്പെഷ്യൽ വായ്പ തരങ്ങൾ ചേർക്കുക.'
+                          : 'Please add special loan types in Settings first.',
+                      style: GoogleFonts.outfit(color: Colors.red),
+                    )
+                  else
+                    DropdownButtonFormField<SpecialLoanTypeModel>(
+                      initialValue: selectedType,
                       decoration: InputDecoration(
-                        labelText: isMl ? 'തുക (₹)' : 'Amount (₹)',
+                        labelText: isMl ? 'വായ്പ തരം' : 'Loan Type',
                         border: const OutlineInputBorder(),
                       ),
+                      items: activeTypes.map((t) {
+                        return DropdownMenuItem<SpecialLoanTypeModel>(
+                          value: t,
+                          child: Text(
+                            t.name,
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setState(() => selectedType = val),
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: notesCtrl,
-                      decoration: InputDecoration(
-                        labelText: isMl ? 'വിവരണം' : 'Notes',
-                        border: const OutlineInputBorder(),
-                      ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: amountCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    child: Text(isMl ? 'റദ്ദാക്കുക' : 'Cancel'),
+                    decoration: InputDecoration(
+                      labelText: isMl ? 'തുക (₹)' : 'Amount (₹)',
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
-                    onPressed: selectedType == null
-                        ? null
-                        : () async {
-                            final amt = double.tryParse(amountCtrl.text) ?? 0.0;
-                            if (amt <= 0) return;
-                            final formattedDate = selectedDate.toString().split(' ')[0];
-                            final success = await context.read<MemberViewModel>().issueLoan(
-                                  memberId,
-                                  amt,
-                                  specialLoanTypeId: selectedType!.id,
-                                  description: notesCtrl.text.trim(),
-                                  transactionDate: formattedDate,
-                                );
-                            if (dialogContext.mounted) {
-                              if (success) AppSnackbar.showSuccess(dialogContext, 'Special Loan Issued!');
-                              Navigator.pop(dialogContext);
-                            }
-                          },
-                    child: Text(isMl ? 'നൽകുക' : 'Issue'),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: notesCtrl,
+                    decoration: InputDecoration(
+                      labelText: isMl ? 'വിവരണം' : 'Notes',
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
                 ],
               ),
-            );
-          },
-        ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(isMl ? 'റദ്ദാക്കുക' : 'Cancel'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: selectedType == null
+                      ? null
+                      : () async {
+                          final amt = double.tryParse(amountCtrl.text) ?? 0.0;
+                          if (amt <= 0) return;
+                          final formattedDate = selectedDate.toString().split(
+                            ' ',
+                          )[0];
+                          final success = await context
+                              .read<MemberViewModel>()
+                              .issueLoan(
+                                memberId,
+                                amt,
+                                specialLoanTypeId: selectedType!.id,
+                                description: notesCtrl.text.trim(),
+                                transactionDate: formattedDate,
+                              );
+                          if (dialogContext.mounted) {
+                            if (success)
+                              AppSnackbar.showSuccess(
+                                dialogContext,
+                                'Special Loan Issued!',
+                              );
+                            Navigator.pop(dialogContext);
+                          }
+                        },
+                  child: Text(isMl ? 'നൽകുക' : 'Issue'),
+                ),
+              ],
+            ),
+          );
+        },
       ),
-    );
-  }
+    ),
+  );
+}

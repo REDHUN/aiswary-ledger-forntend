@@ -12,11 +12,13 @@ import 'package:ashgledger/core/model/member_processing_data_model.dart';
 class MemberProcessingScreen extends StatefulWidget {
   final int meetingId;
   final int memberId;
+  final String meetingDate;
 
   const MemberProcessingScreen({
     super.key,
     required this.meetingId,
     required this.memberId,
+    required this.meetingDate,
   });
 
   @override
@@ -27,7 +29,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
   final _loanRepaymentCtrl = TextEditingController();
   final _depositAdditionCtrl = TextEditingController();
   final _finePaymentCtrl = TextEditingController();
-  final _financialAidPaymentCtrl = TextEditingController();
+
   final _monthlyContributionCtrl = TextEditingController();
   final Map<int, TextEditingController> _specialLoanCtrls = {};
 
@@ -49,18 +51,81 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
   @override
   void initState() {
     super.initState();
+
     _loanRepaymentCtrl.addListener(_onFieldChanged);
     _depositAdditionCtrl.addListener(_onFieldChanged);
     _finePaymentCtrl.addListener(_onFieldChanged);
-    _financialAidPaymentCtrl.addListener(_onFieldChanged);
     _monthlyContributionCtrl.addListener(_onFieldChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MemberProcessingViewModel>().fetchProcessingForm(
-        widget.meetingId,
-        widget.memberId,
-      );
+      if (mounted) {
+        _loadForm();
+      }
     });
+  }
+
+  Future<void> _loadForm() async {
+    _resetFormState();
+
+    final vm = context.read<MemberProcessingViewModel>();
+
+    await vm.fetchProcessingForm(widget.meetingId, widget.memberId);
+
+    if (!mounted) return;
+
+    final data = vm.formData;
+
+    if (data != null && data.processingStatus == 'COMPLETED') {
+      _populateControllers(data);
+      _isInitialized = true;
+    }
+  }
+
+  void _resetFormState() {
+    _isInitialized = false;
+    _isEditMode = false;
+
+    _loanRepaymentCtrl.clear();
+    _depositAdditionCtrl.clear();
+    _finePaymentCtrl.clear();
+    _monthlyContributionCtrl.clear();
+    _notesCtrl.clear();
+
+    for (final controller in _specialLoanCtrls.values) {
+      controller.clear();
+    }
+  }
+
+  void _populateControllers(MemberProcessingDataModel data) {
+    _loanRepaymentCtrl.text = data.lastLoanRepayment > 0
+        ? data.lastLoanRepayment.toStringAsFixed(2)
+        : '';
+
+    _depositAdditionCtrl.text = data.lastDepositAddition > 0
+        ? data.lastDepositAddition.toStringAsFixed(2)
+        : '';
+
+    _finePaymentCtrl.text = data.lastFinePayment > 0
+        ? data.lastFinePayment.toStringAsFixed(2)
+        : '';
+
+    _monthlyContributionCtrl.text = data.lastMonthlyContributionAddition > 0
+        ? data.lastMonthlyContributionAddition.toStringAsFixed(2)
+        : '';
+
+    _notesCtrl.text = data.lastNotes ?? '';
+
+    for (final controller in _specialLoanCtrls.values) {
+      controller.clear();
+    }
+
+    for (final spl in data.specialLoanBalances) {
+      if (spl.lastRepaymentAmount > 0) {
+        _getSpecialLoanCtrl(spl.specialLoanTypeId).text = spl
+            .lastRepaymentAmount
+            .toStringAsFixed(2);
+      }
+    }
   }
 
   void _onFieldChanged() {
@@ -74,13 +139,14 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
     _loanRepaymentCtrl.removeListener(_onFieldChanged);
     _depositAdditionCtrl.removeListener(_onFieldChanged);
     _finePaymentCtrl.removeListener(_onFieldChanged);
-    _financialAidPaymentCtrl.removeListener(_onFieldChanged);
+
     _monthlyContributionCtrl.removeListener(_onFieldChanged);
+    _isInitialized = false;
+    _isEditMode = false;
 
     _loanRepaymentCtrl.dispose();
     _depositAdditionCtrl.dispose();
     _finePaymentCtrl.dispose();
-    _financialAidPaymentCtrl.dispose();
     _monthlyContributionCtrl.dispose();
     for (var c in _specialLoanCtrls.values) {
       c.dispose();
@@ -97,7 +163,9 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
       appBar: AppBar(title: Text(l10n.translate('member_collection_form'))),
       body: Consumer<MemberProcessingViewModel>(
         builder: (context, vm, _) {
-          if (vm.loadState.isLoading) {
+          if (vm.loadState.isLoading ||
+              vm.formData == null ||
+              vm.loadedMemberId != widget.memberId) {
             return const MemberProcessingShimmerLoading();
           }
           if (vm.loadState.hasError) {
@@ -108,84 +176,46 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
             );
           }
 
-          final data = vm.formData;
-          if (data == null) return const SizedBox.shrink();
-
-          if (data.processingStatus == 'COMPLETED' && !_isInitialized) {
-            _isInitialized = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                if (data.lastLoanRepayment > 0)
-                  _loanRepaymentCtrl.text = data.lastLoanRepayment
-                      .toStringAsFixed(2);
-                if (data.lastDepositAddition > 0)
-                  _depositAdditionCtrl.text = data.lastDepositAddition
-                      .toStringAsFixed(2);
-                if (data.lastFinePayment > 0)
-                  _finePaymentCtrl.text = data.lastFinePayment.toStringAsFixed(
-                    2,
-                  );
-                if (data.lastMonthlyContributionAddition > 0)
-                  _monthlyContributionCtrl.text = data
-                      .lastMonthlyContributionAddition
-                      .toStringAsFixed(2);
-                if (data.lastFinancialAidPayment > 0)
-                  _financialAidPaymentCtrl.text = data.lastFinancialAidPayment
-                      .toStringAsFixed(2);
-                if (data.lastNotes != null) _notesCtrl.text = data.lastNotes!;
-
-                for (var spl in data.specialLoanBalances) {
-                  if (spl.lastRepaymentAmount > 0) {
-                    _getSpecialLoanCtrl(spl.specialLoanTypeId).text = spl
-                        .lastRepaymentAmount
-                        .toStringAsFixed(2);
-                  }
-                }
-              }
-            });
-          }
-
-          final isCompleted = data.processingStatus == 'COMPLETED';
+          final isCompleted = vm.formData!.processingStatus == 'COMPLETED';
           final isReadOnly = isCompleted && !_isEditMode;
           final isMl = l10n.locale.languageCode == 'ml';
 
           // Base balances BEFORE this meeting's payment was applied
           final baseLoan = isCompleted
-              ? (data.loanRemaining + data.lastLoanRepayment)
-              : data.loanRemaining;
+              ? (vm.formData!.loanRemaining + vm.formData!.lastLoanRepayment)
+              : vm.formData!.loanRemaining;
           final baseDeposit = isCompleted
-              ? (data.depositCurrent - data.lastDepositAddition)
-              : data.depositCurrent;
+              ? (vm.formData!.depositCurrent - vm.formData!.lastDepositAddition)
+              : vm.formData!.depositCurrent;
           final baseFine = isCompleted
-              ? (data.fineRemaining + data.lastFinePayment)
-              : data.fineRemaining;
-          final baseAid = isCompleted
-              ? (data.financialAidRemaining + data.lastFinancialAidPayment)
-              : data.financialAidRemaining;
+              ? (vm.formData!.fineRemaining + vm.formData!.lastFinePayment)
+              : vm.formData!.fineRemaining;
+
           final baseContribution = isCompleted
-              ? (data.monthlyContributionCurrent -
-                    data.lastMonthlyContributionAddition)
-              : data.monthlyContributionCurrent;
+              ? (vm.formData!.monthlyContributionCurrent -
+                    vm.formData!.lastMonthlyContributionAddition)
+              : vm.formData!.monthlyContributionCurrent;
 
           // Calculate entered amounts live
           final loanRepayment = double.tryParse(_loanRepaymentCtrl.text) ?? 0.0;
           final depositAddition =
               double.tryParse(_depositAdditionCtrl.text) ?? 0.0;
           final finePayment = double.tryParse(_finePaymentCtrl.text) ?? 0.0;
-          final financialAidPayment =
-              double.tryParse(_financialAidPaymentCtrl.text) ?? 0.0;
+
           final monthlyContribution =
               double.tryParse(_monthlyContributionCtrl.text) ?? 0.0;
 
           // Calculate updated total previews
           final updatedLoan = baseLoan - loanRepayment;
           final updatedDeposit = baseDeposit + depositAddition;
-          final updatedFine = (baseFine - finePayment) < 0 ? 0.0 : (baseFine - finePayment);
-          final updatedAid = baseAid - financialAidPayment;
+          final updatedFine = (baseFine - finePayment) < 0
+              ? 0.0
+              : (baseFine - finePayment);
+
           final updatedContribution = baseContribution + monthlyContribution;
 
           double totalSpecialLoans = 0.0;
-          for (var entry in data.specialLoanBalances) {
+          for (var entry in vm.formData!.specialLoanBalances) {
             final c = _specialLoanCtrls[entry.specialLoanTypeId];
             if (c != null) {
               totalSpecialLoans += double.tryParse(c.text) ?? 0.0;
@@ -197,7 +227,6 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
               loanRepayment +
               depositAddition +
               finePayment +
-              financialAidPayment +
               monthlyContribution;
 
           final updatedLoanText = loanRepayment > 0
@@ -218,12 +247,6 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                     : 'Updated Fine Total: ₹${updatedFine.toStringAsFixed(2)}')
               : null;
 
-          final updatedAidText = financialAidPayment > 0
-              ? (isMl
-                    ? 'പുതിയ സഹായ അടവ്: ₹${updatedAid.toStringAsFixed(2)}'
-                    : 'Updated Aid Total: ₹${updatedAid.toStringAsFixed(2)}')
-              : null;
-
           final updatedContributionText = monthlyContribution > 0
               ? (isMl
                     ? 'പുതിയ ആകെ വിഹിതം: ₹${updatedContribution.toStringAsFixed(2)}'
@@ -235,7 +258,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildMemberBanner(data, l10n),
+                _buildMemberBanner(vm.formData!, l10n),
                 if (isCompleted && !_isEditMode) ...[
                   const SizedBox(height: 12),
                   Container(
@@ -319,9 +342,9 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                   ),
                 ],
                 const SizedBox(height: 16),
-                if (data.interestCalculationRequired &&
-                    !data.interestCalculated)
-                  _buildInterestRequiredWarning(data, l10n),
+                if (vm.formData!.interestCalculationRequired &&
+                    !vm.formData!.interestCalculated)
+                  _buildInterestRequiredWarning(vm.formData!, l10n),
                 const SizedBox(height: 20),
                 Text(
                   l10n.translate('financial_collection_entries'),
@@ -332,7 +355,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                if (data.interestCalculated)
+                if (vm.formData!.interestCalculated)
                   Container(
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(14),
@@ -356,7 +379,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${l10n.translate('calculated_interest_title')} (${data.activeInterestPeriod ?? "Period"})',
+                                '${l10n.translate('calculated_interest_title')} (${vm.formData!.activeInterestPeriod ?? "Period"})',
                                 style: GoogleFonts.outfit(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
@@ -365,7 +388,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '₹${data.calculatedInterestAmount.toStringAsFixed(2)}',
+                                '₹${vm.formData!.calculatedInterestAmount.toStringAsFixed(2)}',
                                 style: GoogleFonts.outfit(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -400,6 +423,18 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                   ),
 
                 _buildInputField(
+                  title: l10n.translate('deposit_addition'),
+                  controller: _depositAdditionCtrl,
+                  color: AppColors.accountDeposit,
+                  badgeText:
+                      '${l10n.translate('current')}: ₹${baseDeposit.toStringAsFixed(2)}',
+                  badgeColor: AppColors.accountDeposit,
+                  badgeIcon: Icons.savings_rounded,
+                  updatedText: updatedDepositText,
+                  readOnly: isReadOnly,
+                ),
+
+                _buildInputField(
                   title: l10n.translate('loan_repayment'),
                   controller: _loanRepaymentCtrl,
                   color: AppColors.accountLoan,
@@ -421,7 +456,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                   ),
                 ),
 
-                ...data.specialLoanBalances.map((spl) {
+                ...vm.formData!.specialLoanBalances.map((spl) {
                   final ctrl = _getSpecialLoanCtrl(spl.specialLoanTypeId);
                   final splPayment = double.tryParse(ctrl.text) ?? 0.0;
                   final baseSplBal = isCompleted
@@ -458,18 +493,6 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                 }),
 
                 _buildInputField(
-                  title: l10n.translate('deposit_addition'),
-                  controller: _depositAdditionCtrl,
-                  color: AppColors.accountDeposit,
-                  badgeText:
-                      '${l10n.translate('current')}: ₹${baseDeposit.toStringAsFixed(2)}',
-                  badgeColor: AppColors.accountDeposit,
-                  badgeIcon: Icons.savings_rounded,
-                  updatedText: updatedDepositText,
-                  readOnly: isReadOnly,
-                ),
-
-                _buildInputField(
                   title: l10n.translate('fine_payment'),
                   controller: _finePaymentCtrl,
                   color: AppColors.accountFine,
@@ -485,26 +508,14 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                             Icons.arrow_circle_down_rounded,
                             color: AppColors.accountFine,
                           ),
-                          tooltip: isMl ? 'മുഴുവൻ പിഴയും അടയ്ക്കുക' : 'Pay Full Fine',
+                          tooltip: isMl
+                              ? 'മുഴുവൻ പിഴയും അടയ്ക്കുക'
+                              : 'Pay Full Fine',
                           onPressed: () {
                             _finePaymentCtrl.text = baseFine.toStringAsFixed(2);
                           },
                         )
                       : null,
-                ),
-
-                _buildInputField(
-                  title: isMl
-                      ? 'സാമ്പത്തിക സഹായം നൽകുക (₹)'
-                      : 'Give Financial Aid (₹)',
-                  controller: _financialAidPaymentCtrl,
-                  color: AppColors.accountFinancialAid,
-                  badgeText:
-                      '${isMl ? "ആകെ ലഭിച്ചത്" : "Total Given"}: ₹${baseAid.toStringAsFixed(2)}',
-                  badgeColor: AppColors.accountFinancialAid,
-                  badgeIcon: Icons.volunteer_activism_rounded,
-                  updatedText: updatedAidText,
-                  readOnly: isReadOnly,
                 ),
 
                 _buildInputField(
@@ -577,12 +588,15 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
       ),
       bottomNavigationBar: Consumer<MemberProcessingViewModel>(
         builder: (context, vm, _) {
-          if (vm.loadState.isLoading || vm.formData == null)
+          if (vm.loadState.isLoading || vm.formData == null) {
             return const SizedBox.shrink();
+          }
           final data = vm.formData!;
           final isCompleted = data.processingStatus == 'COMPLETED';
           final isMl = l10n.locale.languageCode == 'ml';
-          final baseFine = isCompleted ? (data.fineRemaining + data.lastFinePayment) : data.fineRemaining;
+          final baseFine = isCompleted
+              ? (data.fineRemaining + data.lastFinePayment)
+              : data.fineRemaining;
 
           final buttonColor = isCompleted && !_isEditMode
               ? Colors.orange.shade800
@@ -622,7 +636,8 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                             return;
                           }
 
-                          final enteredFine = double.tryParse(_finePaymentCtrl.text) ?? 0.0;
+                          final enteredFine =
+                              double.tryParse(_finePaymentCtrl.text) ?? 0.0;
                           if (enteredFine > 0 && baseFine <= 0) {
                             AppSnackbar.showError(
                               context,
@@ -658,11 +673,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                                 0.0,
                             finePayment:
                                 double.tryParse(_finePaymentCtrl.text) ?? 0.0,
-                            financialAidPayment:
-                                double.tryParse(
-                                  _financialAidPaymentCtrl.text,
-                                ) ??
-                                0.0,
+
                             monthlyContributionAddition:
                                 double.tryParse(
                                   _monthlyContributionCtrl.text,
@@ -685,9 +696,11 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                             notes: _notesCtrl.text.trim().isEmpty
                                 ? null
                                 : _notesCtrl.text.trim(),
-                            transactionDate: _selectedTransactionDate
-                                .toIso8601String()
-                                .split("T")[0],
+                            transactionDate:
+                                widget.meetingDate ??
+                                _selectedTransactionDate
+                                    .toIso8601String()
+                                    .split("T")[0],
                             isUpdate: isCompleted,
                             interestPeriod: interestPeriodToUse,
                           );
@@ -931,10 +944,18 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
             ? '$period കാലയളവിലേക്ക് 1% പലിശ കണക്കാക്കി വായ്പയിൽ ചേർത്തു!'
             : '1% Interest calculated & added to loan balance for $period!';
         AppSnackbar.showSuccess(context, successMsg);
-        context.read<MemberProcessingViewModel>().fetchProcessingForm(
-          widget.meetingId,
-          widget.memberId,
-        );
+        final vm = context.read<MemberProcessingViewModel>();
+
+        await vm.fetchProcessingForm(widget.meetingId, widget.memberId);
+
+        if (!mounted) return;
+
+        final refreshedData = vm.formData;
+        if (refreshedData != null &&
+            refreshedData.processingStatus == 'COMPLETED') {
+          _populateControllers(refreshedData);
+          _isInitialized = true;
+        }
       } else {
         AppSnackbar.showError(
           context,

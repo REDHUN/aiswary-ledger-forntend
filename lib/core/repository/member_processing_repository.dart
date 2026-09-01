@@ -7,7 +7,10 @@ class MemberProcessingRepository {
 
   MemberProcessingRepository(this._apiClient);
 
-  Future<MemberProcessingDataModel> getProcessingForm(int meetingId, int memberId) async {
+  Future<MemberProcessingDataModel> getProcessingForm(
+    int meetingId,
+    int memberId,
+  ) async {
     final response = await _apiClient.request(
       path: ApiEndpoints.memberProcessingForm(meetingId, memberId),
       method: RequestType.get,
@@ -23,7 +26,6 @@ class MemberProcessingRepository {
     required double interestPayment,
     required double depositAddition,
     required double finePayment,
-    required double financialAidPayment,
     required double monthlyContributionAddition,
     String? notes,
     List<Map<String, dynamic>>? specialLoanRepayments,
@@ -40,7 +42,6 @@ class MemberProcessingRepository {
         'interestPayment': interestPayment,
         'depositAddition': depositAddition,
         'finePayment': finePayment,
-        'financialAidPayment': financialAidPayment,
         'monthlyContributionAddition': monthlyContributionAddition,
         'specialLoanRepayments': specialLoanRepayments,
         'notes': notes,
@@ -51,15 +52,15 @@ class MemberProcessingRepository {
     );
   }
 
-  Future<void> calculateInterest(int memberId, String interestPeriod, {int? meetingId}) async {
+  Future<void> calculateInterest(
+    int memberId,
+    String interestPeriod, {
+    int? meetingId,
+  }) async {
     await _apiClient.request(
       path: ApiEndpoints.memberCalculateInterest(memberId),
       method: RequestType.post,
-      body: {
-        'interestPeriod': interestPeriod,
-        'meetingId': meetingId,
-      },
+      body: {'interestPeriod': interestPeriod, 'meetingId': meetingId},
     );
   }
 }
-

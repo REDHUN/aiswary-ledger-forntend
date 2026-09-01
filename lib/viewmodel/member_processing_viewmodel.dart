@@ -5,26 +5,41 @@ import '../core/model/member_processing_data_model.dart';
 
 class MemberProcessingViewModel extends ChangeNotifier {
   final MemberProcessingRepository _repository;
+
   final LoadState loadState = LoadState();
   final LoadState submitState = LoadState();
 
   MemberProcessingDataModel? _formData;
   MemberProcessingDataModel? get formData => _formData;
 
+  int? _loadedMemberId;
+  int? get loadedMemberId => _loadedMemberId;
+
   MemberProcessingViewModel(this._repository);
 
   Future<void> fetchProcessingForm(int meetingId, int memberId) async {
+    // Always clear old data first
+    _formData = null;
+    _loadedMemberId = null;
+
     loadState.loading();
     notifyListeners();
 
     try {
-      _formData = await _repository.getProcessingForm(meetingId, memberId);
+      final result = await _repository.getProcessingForm(meetingId, memberId);
+
+      _formData = result;
+      _loadedMemberId = memberId;
+
       loadState.success();
     } catch (e) {
+      _formData = null;
+      _loadedMemberId = null;
+
       loadState.error(e.toString());
-    } finally {
-      notifyListeners();
     }
+
+    notifyListeners();
   }
 
   Future<bool> submitProcessing({
@@ -34,7 +49,6 @@ class MemberProcessingViewModel extends ChangeNotifier {
     required double interestPayment,
     required double depositAddition,
     required double finePayment,
-    required double financialAidPayment,
     required double monthlyContributionAddition,
     String? notes,
     List<Map<String, dynamic>>? specialLoanRepayments,
@@ -45,7 +59,8 @@ class MemberProcessingViewModel extends ChangeNotifier {
     submitState.loading();
     notifyListeners();
 
-    final idempotencyKey = 'tx-$meetingId-$memberId-${DateTime.now().millisecondsSinceEpoch}';
+    final idempotencyKey =
+        'tx-$meetingId-$memberId-${DateTime.now().millisecondsSinceEpoch}';
 
     try {
       await _repository.processMember(
@@ -55,7 +70,6 @@ class MemberProcessingViewModel extends ChangeNotifier {
         interestPayment: interestPayment,
         depositAddition: depositAddition,
         finePayment: finePayment,
-        financialAidPayment: financialAidPayment,
         monthlyContributionAddition: monthlyContributionAddition,
         specialLoanRepayments: specialLoanRepayments,
         notes: notes,
@@ -64,7 +78,9 @@ class MemberProcessingViewModel extends ChangeNotifier {
         isUpdate: isUpdate,
         idempotencyKey: idempotencyKey,
       );
+
       submitState.success("Member payments processed successfully!");
+
       notifyListeners();
       return true;
     } catch (e) {
@@ -74,13 +90,23 @@ class MemberProcessingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> calculateInterest(int memberId, String interestPeriod, {int? meetingId}) async {
+  Future<bool> calculateInterest(
+    int memberId,
+    String interestPeriod, {
+    int? meetingId,
+  }) async {
     submitState.loading();
     notifyListeners();
 
     try {
-      await _repository.calculateInterest(memberId, interestPeriod, meetingId: meetingId);
+      await _repository.calculateInterest(
+        memberId,
+        interestPeriod,
+        meetingId: meetingId,
+      );
+
       submitState.success("Interest calculated successfully");
+
       notifyListeners();
       return true;
     } catch (e) {
@@ -90,4 +116,3 @@ class MemberProcessingViewModel extends ChangeNotifier {
     }
   }
 }
-

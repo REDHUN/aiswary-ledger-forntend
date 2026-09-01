@@ -8,8 +8,12 @@ import '../main_navigation_screen.dart';
 import '../member_portal/member_portal_screen.dart';
 
 class LoginScreen extends StatelessWidget {
-  final TextEditingController usernameController = TextEditingController(text: 'admin');
-  final TextEditingController passwordController = TextEditingController(text: 'admin123');
+  final TextEditingController usernameController = TextEditingController(
+    text: 'admin',
+  );
+  final TextEditingController passwordController = TextEditingController(
+    text: 'admin123',
+  );
 
   LoginScreen({super.key});
 
@@ -30,7 +34,9 @@ class LoginScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24.0),
               child: Card(
                 elevation: 8,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(28.0),
                   child: Column(
@@ -42,16 +48,28 @@ class LoginScreen extends StatelessWidget {
                           color: AppColors.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.account_balance_wallet_rounded, size: 48, color: AppColors.primary),
+                        child: const Icon(
+                          Icons.account_balance_wallet_rounded,
+                          size: 48,
+                          color: AppColors.primary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Aiswarya Sangham',
-                        style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                        'ഐശ്വര്യ  സ്വയം  സഹായക  സംഘം ',
+                        style: GoogleFonts.outfit(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                       Text(
                         'Financial Ledger Application',
-                        style: GoogleFonts.outfit(fontSize: 14, color: AppColors.textSecondary),
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 32),
                       TextField(
@@ -82,33 +100,53 @@ class LoginScreen extends StatelessWidget {
                               onPressed: isLoading
                                   ? null
                                   : () async {
-                                      final username = usernameController.text.trim();
-                                      final password = passwordController.text.trim();
-                                      if (username.isEmpty || password.isEmpty) {
-                                        AppSnackbar.showError(context, 'Please enter mobile number and password');
+                                      final username = usernameController.text
+                                          .trim();
+                                      final password = passwordController.text
+                                          .trim();
+                                      if (username.isEmpty ||
+                                          password.isEmpty) {
+                                        AppSnackbar.showError(
+                                          context,
+                                          'Please enter mobile number and password',
+                                        );
                                         return;
                                       }
 
-                                      final authVm = context.read<AuthViewModel>();
-                                      final success = await authVm.login(username, password);
+                                      final authVm = context
+                                          .read<AuthViewModel>();
+                                      final success = await authVm.login(
+                                        username,
+                                        password,
+                                      );
                                       if (context.mounted) {
                                         if (success) {
-                                          AppSnackbar.showSuccess(context, 'Welcome ${authVm.username}!');
+                                          AppSnackbar.showSuccess(
+                                            context,
+                                            'Welcome ${authVm.username}!',
+                                          );
                                           if (authVm.isAdmin) {
                                             Navigator.pushReplacement(
                                               context,
-                                              MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const MainNavigationScreen(),
+                                              ),
                                             );
                                           } else {
                                             Navigator.pushReplacement(
                                               context,
-                                              MaterialPageRoute(builder: (_) => const MemberPortalScreen()),
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const MemberPortalScreen(),
+                                              ),
                                             );
                                           }
                                         } else {
                                           AppSnackbar.showError(
                                             context,
-                                            authVm.loadState.message ?? 'Login failed. Please check credentials.',
+                                            authVm.loadState.message ??
+                                                'Login failed. Please check credentials.',
                                           );
                                         }
                                       }
@@ -117,9 +155,18 @@ class LoginScreen extends StatelessWidget {
                                   ? const SizedBox(
                                       width: 24,
                                       height: 24,
-                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
                                     )
-                                  : Text('Sign In', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  : Text(
+                                      'Sign In',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           );
                         },

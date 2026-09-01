@@ -63,7 +63,11 @@ class DashboardShimmerLoading extends StatelessWidget {
             mainAxisSpacing: 12,
           ),
           itemCount: 6,
-          itemBuilder: (_, _) => const AppShimmer(width: double.infinity, height: 90, borderRadius: 16),
+          itemBuilder: (_, _) => const AppShimmer(
+            width: double.infinity,
+            height: 90,
+            borderRadius: 16,
+          ),
         ),
         const SizedBox(height: 24),
 
@@ -72,9 +76,24 @@ class DashboardShimmerLoading extends StatelessWidget {
         const SizedBox(height: 12),
 
         // 3 Transaction Card Shimmers
-        const AppShimmer(width: double.infinity, height: 80, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 80, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 80, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(
+          width: double.infinity,
+          height: 80,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 80,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 80,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
       ],
     );
   }
@@ -97,7 +116,7 @@ class MemberListShimmerLoading extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       physics: physics,
       padding: const EdgeInsets.all(16),
-      itemCount: 6,
+      itemCount: 20,
       itemBuilder: (_, _) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Shimmer.fromColors(
@@ -123,7 +142,14 @@ class MemberListShimmerLoading extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(width: 60, height: 24, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+                Container(
+                  width: 60,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ],
             ),
           ),
@@ -161,7 +187,11 @@ class MemberDetailShimmerLoading extends StatelessWidget {
             mainAxisSpacing: 12,
           ),
           itemCount: 6,
-          itemBuilder: (_, _) => const AppShimmer(width: double.infinity, height: 90, borderRadius: 16),
+          itemBuilder: (_, _) => const AppShimmer(
+            width: double.infinity,
+            height: 90,
+            borderRadius: 16,
+          ),
         ),
         const SizedBox(height: 24),
 
@@ -170,10 +200,30 @@ class MemberDetailShimmerLoading extends StatelessWidget {
         const SizedBox(height: 12),
 
         // 4 Transaction Tile Shimmers
-        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(
+          width: double.infinity,
+          height: 75,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 75,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 75,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 75,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
       ],
     );
   }
@@ -187,7 +237,7 @@ class MeetingsListShimmerLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: 4,
+      itemCount: 20,
       itemBuilder: (_, _) => const AppShimmer(
         width: double.infinity,
         height: 130,
@@ -216,11 +266,104 @@ class MeetingDetailShimmerLoading extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Member List Card Shimmers
-        const AppShimmer(width: double.infinity, height: 72, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 72, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 72, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 72, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 72, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 72,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
       ],
     );
   }
@@ -245,7 +388,7 @@ class MemberProcessingShimmerLoading extends StatelessWidget {
 
         // Input Fields Shimmer (5 fields)
         ...List.generate(
-          5,
+          20,
           (index) => const Padding(
             padding: EdgeInsets.only(bottom: 18),
             child: Column(
@@ -259,7 +402,11 @@ class MemberProcessingShimmerLoading extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 8),
-                AppShimmer(width: double.infinity, height: 50, borderRadius: 12),
+                AppShimmer(
+                  width: double.infinity,
+                  height: 50,
+                  borderRadius: 12,
+                ),
               ],
             ),
           ),
@@ -281,7 +428,7 @@ class TransactionListShimmerLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: 6,
+      itemCount: 20,
       itemBuilder: (_, _) => const AppShimmer(
         width: double.infinity,
         height: 85,
@@ -291,7 +438,6 @@ class TransactionListShimmerLoading extends StatelessWidget {
     );
   }
 }
-
 
 /// Shimmer Loading Skeleton for ReportsScreen & Category Reports
 class ReportsDashboardShimmerLoading extends StatelessWidget {
@@ -309,17 +455,41 @@ class ReportsDashboardShimmerLoading extends StatelessWidget {
         // Grid Metric Shimmers (2x2)
         Row(
           children: const [
-            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+            Expanded(
+              child: AppShimmer(
+                width: double.infinity,
+                height: 85,
+                borderRadius: 16,
+              ),
+            ),
             SizedBox(width: 12),
-            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+            Expanded(
+              child: AppShimmer(
+                width: double.infinity,
+                height: 85,
+                borderRadius: 16,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: const [
-            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+            Expanded(
+              child: AppShimmer(
+                width: double.infinity,
+                height: 85,
+                borderRadius: 16,
+              ),
+            ),
             SizedBox(width: 12),
-            Expanded(child: AppShimmer(width: double.infinity, height: 85, borderRadius: 16)),
+            Expanded(
+              child: AppShimmer(
+                width: double.infinity,
+                height: 85,
+                borderRadius: 16,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -329,9 +499,24 @@ class ReportsDashboardShimmerLoading extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Item Card Shimmers
-        const AppShimmer(width: double.infinity, height: 70, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 70, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 70, borderRadius: 14, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(
+          width: double.infinity,
+          height: 70,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 70,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 70,
+          borderRadius: 14,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
       ],
     );
   }
@@ -355,10 +540,30 @@ class GroupLoansShimmerLoading extends StatelessWidget {
         const SizedBox(height: 12),
 
         // 4 Group Loan History Cards
-        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
-        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
-        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
-        const AppShimmer(width: double.infinity, height: 110, borderRadius: 18, margin: EdgeInsets.only(bottom: 12)),
+        const AppShimmer(
+          width: double.infinity,
+          height: 110,
+          borderRadius: 18,
+          margin: EdgeInsets.only(bottom: 12),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 110,
+          borderRadius: 18,
+          margin: EdgeInsets.only(bottom: 12),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 110,
+          borderRadius: 18,
+          margin: EdgeInsets.only(bottom: 12),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 110,
+          borderRadius: 18,
+          margin: EdgeInsets.only(bottom: 12),
+        ),
       ],
     );
   }
@@ -392,7 +597,11 @@ class MemberPortalShimmerLoading extends StatelessWidget {
             mainAxisSpacing: 12,
           ),
           itemCount: 4,
-          itemBuilder: (_, _) => const AppShimmer(width: double.infinity, height: 85, borderRadius: 16),
+          itemBuilder: (_, _) => const AppShimmer(
+            width: double.infinity,
+            height: 85,
+            borderRadius: 16,
+          ),
         ),
         const SizedBox(height: 20),
 
@@ -401,9 +610,24 @@ class MemberPortalShimmerLoading extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Activity Tile Shimmers
-        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
-        const AppShimmer(width: double.infinity, height: 75, borderRadius: 16, margin: EdgeInsets.only(bottom: 10)),
+        const AppShimmer(
+          width: double.infinity,
+          height: 75,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 75,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
+        const AppShimmer(
+          width: double.infinity,
+          height: 75,
+          borderRadius: 16,
+          margin: EdgeInsets.only(bottom: 10),
+        ),
       ],
     );
   }
