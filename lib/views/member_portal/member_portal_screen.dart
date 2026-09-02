@@ -155,7 +155,12 @@ class _MemberPortalBodyState extends State<_MemberPortalBody> with SingleTickerP
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const MemberAllTransactionsScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => ChangeNotifierProvider.value(
+                          value: context.read<MemberPortalViewModel>(),
+                          child: const MemberAllTransactionsScreen(),
+                        ),
+                      ),
                     );
                   },
                   child: Text(

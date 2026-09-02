@@ -66,7 +66,7 @@ class MemberAllTransactionsScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                tx.accountType,
+                                isMl ? l10n.translate(tx.accountType) : tx.accountType,
                                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
                               ),
                               Text(
@@ -85,12 +85,12 @@ class MemberAllTransactionsScreen extends StatelessWidget {
                             children: [
                               const SizedBox(height: 4),
                               Text(
-                                'Date: ${tx.createdAt.contains('T') ? tx.createdAt.split('T')[0] : tx.createdAt} | Type: ${tx.transactionType}',
+                                '${isMl ? 'തീയതി' : 'Date'}: ${tx.createdAt.contains('T') ? tx.createdAt.split('T')[0] : tx.createdAt} | ${isMl ? 'തരം' : 'Type'}: ${isMl ? l10n.translate('tx_type_${tx.transactionType}') : tx.transactionType}',
                                 style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
                               ),
                               if (tx.description != null && tx.description!.isNotEmpty) ...[
                                 const SizedBox(height: 2),
-                                Text('Notes: ${tx.description}', style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textDark)),
+                                Text('${isMl ? 'വിവരണം' : 'Notes'}: ${tx.description}', style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textDark)),
                               ],
                             ],
                           ),

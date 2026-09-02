@@ -1,8 +1,8 @@
 class ApiEndpoints {
   // static const String baseUrl = "http://localhost:8080/api/v1";
-  // static const String baseUrl = "http://192.168.1.6:8080/api/v1";
-  static const String baseUrl =
-      "https://aiswary-ledger-backend-git-374379557058.asia-south1.run.app/api/v1";
+  static const String baseUrl = "http://192.168.1.6:8080/api/v1";
+  // static const String baseUrl =
+  //     "https://aiswary-ledger-backend-git-374379557058.asia-south1.run.app/api/v1";
 
   // Auth
   static const String login = "/auth/login";

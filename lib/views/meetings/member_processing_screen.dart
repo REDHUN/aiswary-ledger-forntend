@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:ashgledger/viewmodel/member_viewmodel.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ashgledger/core/theme/app_colors.dart';
@@ -492,30 +493,66 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                   );
                 }),
 
-                _buildInputField(
-                  title: l10n.translate('fine_payment'),
-                  controller: _finePaymentCtrl,
-                  color: AppColors.accountFine,
-                  badgeText:
-                      '${isMl ? "നിലവിലെ പിഴ" : "Current Fine"}: ₹${baseFine.toStringAsFixed(2)}',
-                  badgeColor: AppColors.accountFine,
-                  badgeIcon: Icons.gavel_rounded,
-                  updatedText: updatedFineText,
-                  readOnly: isReadOnly || baseFine <= 0,
-                  suffixIcon: baseFine > 0
-                      ? IconButton(
-                          icon: const Icon(
-                            Icons.arrow_circle_down_rounded,
-                            color: AppColors.accountFine,
-                          ),
-                          tooltip: isMl
-                              ? 'മുഴുവൻ പിഴയും അടയ്ക്കുക'
-                              : 'Pay Full Fine',
-                          onPressed: () {
-                            _finePaymentCtrl.text = baseFine.toStringAsFixed(2);
-                          },
-                        )
-                      : null,
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInputField(
+                        title: l10n.translate('fine_payment'),
+                        controller: _finePaymentCtrl,
+                        color: AppColors.accountFine,
+                        badgeText:
+                            '${isMl ? "നിലവിലെ പിഴ" : "Current Fine"}: ₹${baseFine.toStringAsFixed(2)}',
+                        badgeColor: AppColors.accountFine,
+                        badgeIcon: Icons.gavel_rounded,
+                        updatedText: updatedFineText,
+                        readOnly: isReadOnly || baseFine <= 0,
+                        suffixIcon: baseFine > 0
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_circle_down_rounded,
+                                  color: AppColors.accountFine,
+                                ),
+                                tooltip: isMl
+                                    ? 'മുഴുവൻ പിഴയും അടയ്ക്കുക'
+                                    : 'Pay Full Fine',
+                                onPressed: () {
+                                  _finePaymentCtrl.text = baseFine
+                                      .toStringAsFixed(2);
+                                },
+                              )
+                            : null,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryDark,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.add_rounded,
+                          color: AppColors.bgCard,
+                        ),
+                        tooltip: isMl ? ' പിഴ കൂട്ടിച്ചേർക്കുക' : 'Add Fine',
+                        onPressed: () {
+                          _showAmountDialog(
+                            context,
+                            vm.formData!.memberId,
+                            l10n.translate('add_fine'),
+                            (amt, dt, description) =>
+                                context.read<MemberViewModel>().addFine(
+                                  vm.formData!.memberId,
+                                  amt,
+
+                                  transactionDate: dt,
+                                  description: description,
+                                ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
 
                 _buildInputField(
@@ -966,115 +1003,261 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
     }
   }
 
-  Widget _buildInputField({
-    required String title,
-    required TextEditingController controller,
-    required Color color,
-    String? badgeText,
-    Color? badgeColor,
-    IconData? badgeIcon,
-    Widget? suffixIcon,
-    String? updatedText,
-    bool readOnly = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: GoogleFonts.outfit(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
+  void _showAmountDialog(
+    BuildContext context,
+    int memberId,
+    String title,
+    Future<bool> Function(double, String, String) action,
+  ) {
+    final amountCtrl = TextEditingController();
+    final descriptionCtrl = TextEditingController();
+    DateTime selectedDate = DateTime.now();
+    final l10n = AppLocalizations.of(context);
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final dateStr =
+              "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              title,
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: amountCtrl,
+                  enabled: !isSubmitting,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Amount (₹)',
+                    prefixIcon: Icon(Icons.payments_rounded),
                   ),
                 ),
-              ),
-              if (badgeText != null) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: (badgeColor ?? color).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (badgeIcon != null) ...[
-                        Icon(badgeIcon, size: 13, color: badgeColor ?? color),
-                        const SizedBox(width: 4),
-                      ],
-                      Text(
-                        badgeText,
-                        style: GoogleFonts.outfit(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: badgeColor ?? color,
-                        ),
+                const SizedBox(height: 14),
+                InkWell(
+                  onTap: isSubmitting
+                      ? null
+                      : () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) {
+                            setDialogState(() {
+                              selectedDate = picked;
+                            });
+                          }
+                        },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Transaction Date',
+                      suffixIcon: Icon(Icons.calendar_month_rounded),
+                    ),
+                    child: Text(
+                      dateStr,
+                      style: GoogleFonts.outfit(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: descriptionCtrl,
+                  enabled: !isSubmitting,
+                  keyboardType: TextInputType.text,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    prefixIcon: Icon(Icons.description_rounded),
                   ),
                 ),
               ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () => Navigator.pop(dialogContext),
+                child: Text(l10n.translate('cancel')),
+              ),
+              ElevatedButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () async {
+                        final amount = double.tryParse(amountCtrl.text);
+                        if (amount == null || amount <= 0) return;
+                        final formattedDate =
+                            "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
+
+                        setDialogState(() {
+                          isSubmitting = true;
+                        });
+
+                        final success = await action(
+                          amount,
+                          formattedDate,
+                          descriptionCtrl.text,
+                        );
+
+                        if (dialogContext.mounted) {
+                          if (success) {
+                            AppSnackbar.showSuccess(
+                              dialogContext,
+                              '$title Recorded!',
+                            );
+                            Navigator.pop(dialogContext);
+                            if (mounted) {
+                              await context
+                                  .read<MemberProcessingViewModel>()
+                                  .fetchProcessingForm(
+                                    widget.meetingId,
+                                    widget.memberId,
+                                  );
+                            }
+                          } else {
+                            setDialogState(() {
+                              isSubmitting = false;
+                            });
+                          }
+                        }
+                      },
+                child: isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(l10n.translate('save')),
+              ),
             ],
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: controller,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            readOnly: readOnly,
-            enabled: !readOnly,
-            style: GoogleFonts.outfit(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-            decoration: InputDecoration(
-              suffixIcon: suffixIcon,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.divider),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: color, width: 1.8),
-              ),
-            ),
-          ),
-          if (updatedText != null && updatedText.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.trending_flat_rounded,
-                    size: 16,
-                    color: AppColors.success,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    updatedText,
-                    style: GoogleFonts.outfit(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.success,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
+          );
+        },
       ),
     );
   }
+}
+
+Widget _buildInputField({
+  required String title,
+  required TextEditingController controller,
+  required Color color,
+  String? badgeText,
+  Color? badgeColor,
+  IconData? badgeIcon,
+  Widget? suffixIcon,
+  String? updatedText,
+  bool readOnly = false,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            if (badgeText != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: (badgeColor ?? color).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (badgeIcon != null) ...[
+                      Icon(badgeIcon, size: 13, color: badgeColor ?? color),
+                      const SizedBox(width: 4),
+                    ],
+                    Text(
+                      badgeText,
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: badgeColor ?? color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          readOnly: readOnly,
+          enabled: !readOnly,
+          style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            suffixIcon: suffixIcon,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.divider),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: color, width: 1.8),
+            ),
+          ),
+        ),
+        if (updatedText != null && updatedText.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.trending_flat_rounded,
+                  size: 16,
+                  color: AppColors.success,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  updatedText,
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
 }
