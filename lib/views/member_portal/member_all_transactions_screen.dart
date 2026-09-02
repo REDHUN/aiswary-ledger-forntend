@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/common/common_error_widget.dart';
 import '../../core/common/app_shimmer.dart';
+import '../../core/common/app_formatters.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../viewmodel/member_portal_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -85,7 +86,7 @@ class MemberAllTransactionsScreen extends StatelessWidget {
                             children: [
                               const SizedBox(height: 4),
                               Text(
-                                '${isMl ? 'തീയതി' : 'Date'}: ${tx.createdAt.contains('T') ? tx.createdAt.split('T')[0] : tx.createdAt} | ${isMl ? 'തരം' : 'Type'}: ${isMl ? l10n.translate('tx_type_${tx.transactionType}') : tx.transactionType}',
+                                '${isMl ? 'തീയതി' : 'Date'}: ${AppFormatters.formatDate(tx.createdAt)} | ${isMl ? 'തരം' : 'Type'}: ${isMl ? l10n.translate('tx_type_${tx.transactionType}') : tx.transactionType}',
                                 style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
                               ),
                               if (tx.description != null && tx.description!.isNotEmpty) ...[

@@ -1,4 +1,4 @@
-﻿import '../profits/add_group_profit_dialog.dart';
+import '../profits/add_group_profit_dialog.dart';
 import '../groups/issue_group_loan_dialog.dart';
 import '../../viewmodel/group_viewmodel.dart';
 import '../../viewmodel/settings_viewmodel.dart';
@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ashgledger/core/theme/app_colors.dart';
 import 'package:ashgledger/core/common/common_error_widget.dart';
 import 'package:ashgledger/core/common/app_shimmer.dart';
+import 'package:ashgledger/core/common/app_formatters.dart';
 import 'package:ashgledger/core/localization/app_localizations.dart';
 import 'package:ashgledger/core/di/service_locator.dart';
 import 'package:ashgledger/core/repository/reports_repository.dart';
@@ -202,8 +203,8 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                                   Expanded(
                                     child: Text(
                                       isMl
-                                          ? 'മീറ്റിംഗ് #${m.meetingNumber} (${m.meetingDate})'
-                                          : 'Meeting #${m.meetingNumber} (${m.meetingDate})',
+                                          ? 'മീറ്റിംഗ് #${m.meetingNumber} (${AppFormatters.formatDate(m.meetingDate)})'
+                                          : 'Meeting #${m.meetingNumber} (${AppFormatters.formatDate(m.meetingDate)})',
                                       style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -344,8 +345,8 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                             ),
                             Text(
                               isMl
-                                  ? 'തീയതി: ${reg.meetingDate} | പിരീഡ്: ${reg.interestPeriod}'
-                                  : 'Date: ${reg.meetingDate} | Period: ${reg.interestPeriod}',
+                                  ? 'തീയതി: ${AppFormatters.formatDate(reg.meetingDate)} | പിരീഡ്: ${reg.interestPeriod}'
+                                  : 'Date: ${AppFormatters.formatDate(reg.meetingDate)} | Period: ${reg.interestPeriod}',
                               style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w500),
                               overflow: TextOverflow.ellipsis,
                             ),

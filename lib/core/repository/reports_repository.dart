@@ -3,13 +3,15 @@ import '../model/meeting_report_model.dart';
 import '../model/monthly_ledger_report_model.dart';
 import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
-import '../model/financial_report_model.dart';
 import '../model/member_balance_report_model.dart';
 
 import '../model/completed_meeting_register_model.dart';
+import '../model/member_personal_report_model.dart';
 
 class ReportsRepository {
-  Future<CompletedMeetingRegisterModel> getCompletedMeetingRegister(int meetingId) async {
+  Future<CompletedMeetingRegisterModel> getCompletedMeetingRegister(
+    int meetingId,
+  ) async {
     final response = await _apiClient.request(
       path: ApiEndpoints.meetingRegisterBook(meetingId),
       method: RequestType.get,
@@ -17,7 +19,9 @@ class ReportsRepository {
     return CompletedMeetingRegisterModel.fromJson(response['data']);
   }
 
-  Future<MonthlyLedgerReportModel> getMonthlyLedgerReport(String yearMonth) async {
+  Future<MonthlyLedgerReportModel> getMonthlyLedgerReport(
+    String yearMonth,
+  ) async {
     final response = await _apiClient.request(
       path: ApiEndpoints.reportMonthlyLedger(yearMonth),
       method: RequestType.get,
@@ -41,25 +45,10 @@ class ReportsRepository {
     );
     return MeetingReportModel.fromJson(response['data']);
   }
+
   final ApiClient _apiClient;
 
   ReportsRepository(this._apiClient);
-
-  Future<FinancialReportModel> getFinancialSummary() async {
-    final response = await _apiClient.request(
-      path: ApiEndpoints.reportSummary,
-      method: RequestType.get,
-    );
-    return FinancialReportModel.fromJson(response['data']);
-  }
-
-  Future<FinancialReportModel> getPeriodReport({String? startDate, String? endDate}) async {
-    final response = await _apiClient.request(
-      path: ApiEndpoints.reportPeriod(startDate, endDate),
-      method: RequestType.get,
-    );
-    return FinancialReportModel.fromJson(response['data']);
-  }
 
   Future<List<MemberBalanceReportModel>> getMemberBalancesReport() async {
     final response = await _apiClient.request(
@@ -78,4 +67,14 @@ class ReportsRepository {
     return CategoryReportModel.fromJson(response['data']);
   }
 
+  Future<MemberPersonalReportModel> getMemberPersonalReport(
+    int memberId,
+    String? yearMonth,
+  ) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.memberReport(memberId, yearMonth),
+      method: RequestType.get,
+    );
+    return MemberPersonalReportModel.fromJson(response['data']);
+  }
 }

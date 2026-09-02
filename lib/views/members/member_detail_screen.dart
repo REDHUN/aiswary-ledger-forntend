@@ -741,9 +741,6 @@ class MemberDetailScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final dateStr =
-              "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
-
           return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -786,7 +783,7 @@ class MemberDetailScreen extends StatelessWidget {
                       suffixIcon: Icon(Icons.calendar_month_rounded),
                     ),
                     child: Text(
-                      dateStr,
+                      AppFormatters.formatDate(selectedDate),
                       style: GoogleFonts.outfit(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

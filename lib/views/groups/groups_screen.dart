@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/common/common_error_widget.dart';
 import '../../core/common/app_shimmer.dart';
+import '../../core/common/app_formatters.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/di/service_locator.dart';
 import '../../viewmodel/group_viewmodel.dart';
@@ -181,7 +182,7 @@ class _GroupLoansBody extends StatelessWidget {
                           ),
                         const SizedBox(height: 2),
                         Text(
-                          'തീയതി: ${item.transactionDate}',
+                          'തീയതി: ${AppFormatters.formatDate(item.transactionDate)}',
                           style: GoogleFonts.outfit(fontSize: 11, color: Colors.grey),
                         ),
                       ],

@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/common/app_formatters.dart';
 import '../../core/model/expense_type_model.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../viewmodel/expense_viewmodel.dart';
@@ -296,7 +297,7 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
                       suffixIcon: const Icon(Icons.calendar_today_rounded),
                     ),
                     child: Text(
-                      DateFormat('yyyy-MM-dd').format(_selectedDate),
+                      AppFormatters.formatDate(_selectedDate),
                       style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
                     ),
                   ),

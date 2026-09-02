@@ -238,7 +238,9 @@ class _TransactionListScreenBodyState extends State<_TransactionListScreenBody> 
             onPressed: () => _selectDateRange(context, vm),
             icon: Icon(Icons.date_range_rounded, size: 14, color: hasDateFilter ? AppColors.primary : AppColors.textSecondary),
             label: Text(
-              hasDateFilter ? "${vm.startDate} ~ ${vm.endDate}" : (l10n.locale.languageCode == 'ml' ? 'തീയതി' : 'Date Range'),
+              hasDateFilter
+                  ? "${AppFormatters.formatDate(vm.startDate)} ~ ${AppFormatters.formatDate(vm.endDate)}"
+                  : (l10n.locale.languageCode == 'ml' ? 'തീയതി' : 'Date Range'),
               style: GoogleFonts.outfit(
                 fontSize: 11,
                 fontWeight: hasDateFilter ? FontWeight.bold : FontWeight.w500,

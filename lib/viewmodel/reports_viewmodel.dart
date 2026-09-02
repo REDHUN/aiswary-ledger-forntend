@@ -1,10 +1,10 @@
 import '../core/model/category_report_model.dart';
 import '../core/model/meeting_report_model.dart';
 import '../core/model/monthly_ledger_report_model.dart';
+import '../core/model/member_personal_report_model.dart';
 import 'package:flutter/foundation.dart';
 import '../core/state/load_state.dart';
 import '../core/repository/reports_repository.dart';
-import '../core/model/financial_report_model.dart';
 import '../core/model/member_balance_report_model.dart';
 
 import '../core/model/completed_meeting_register_model.dart';
@@ -18,7 +18,9 @@ class ReportsViewModel extends ChangeNotifier {
     registerState.loading();
     notifyListeners();
     try {
-      _completedRegister = await _repository.getCompletedMeetingRegister(meetingId);
+      _completedRegister = await _repository.getCompletedMeetingRegister(
+        meetingId,
+      );
       registerState.success();
     } catch (e) {
       registerState.error(e.toString());
@@ -44,6 +46,7 @@ class ReportsViewModel extends ChangeNotifier {
     _selectedMeetingReport = report;
     notifyListeners();
   }
+
   List<MeetingReportModel> _meetingReports = [];
   MonthlyLedgerReportModel? _monthlyLedgerReport;
 
@@ -58,14 +61,14 @@ class ReportsViewModel extends ChangeNotifier {
   CategoryReportModel? _categoryReport;
   CategoryReportModel? get categoryReport => _categoryReport;
 
-  FinancialReportModel? _summaryReport;
-  FinancialReportModel? get summaryReport => _summaryReport;
-
-  FinancialReportModel? _periodReport;
-  FinancialReportModel? get periodReport => _periodReport;
-
   List<MemberBalanceReportModel> _memberBalances = [];
   List<MemberBalanceReportModel> get memberBalances => _memberBalances;
+
+  MemberPersonalReportModel? _memberPersonalReport;
+  MemberPersonalReportModel? get memberPersonalReport => _memberPersonalReport;
+  MemberBalanceReportModel? _selectedMemberForReport;
+  MemberBalanceReportModel? get selectedMemberForReport => _selectedMemberForReport;
+  final LoadState memberPersonalReportState = LoadState();
 
   String? _startDate;
   String? get startDate => _startDate;
@@ -79,11 +82,14 @@ class ReportsViewModel extends ChangeNotifier {
   List<MemberBalanceReportModel> get filteredMemberBalances {
     if (_searchQuery.isEmpty) return _memberBalances;
     final q = _searchQuery.toLowerCase();
-    return _memberBalances.where((m) =>
-      m.fullName.toLowerCase().contains(q) ||
-      m.memberNumber.toLowerCase().contains(q) ||
-      (m.phone != null && m.phone!.contains(q))
-    ).toList();
+    return _memberBalances
+        .where(
+          (m) =>
+              m.fullName.toLowerCase().contains(q) ||
+              m.memberNumber.toLowerCase().contains(q) ||
+              (m.phone != null && m.phone!.contains(q)),
+        )
+        .toList();
   }
 
   ReportsViewModel(this._repository);
@@ -93,13 +99,15 @@ class ReportsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _summaryReport = await _repository.getFinancialSummary();
-      _periodReport = await _repository.getPeriodReport(startDate: _startDate, endDate: _endDate);
       _memberBalances = await _repository.getMemberBalancesReport();
       _categoryReport = await _repository.getCategoryReport();
       _meetingReports = await _repository.getAllMeetingReports();
       if (_meetingReports.isNotEmpty && _selectedMeetingReport == null) {
         _selectedMeetingReport = _meetingReports.first;
+      }
+      if (_memberBalances.isNotEmpty && _selectedMemberForReport == null) {
+        _selectedMemberForReport = _memberBalances.first;
+        fetchMemberPersonalReport(_memberBalances.first.memberId);
       }
       loadState.success();
     } catch (e) {
@@ -109,20 +117,33 @@ class ReportsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> setDateRange(String? start, String? end) async {
-    _startDate = start;
-    _endDate = end;
+  Future<void> fetchMemberPersonalReport(int memberId, [String? yearMonth]) async {
+    memberPersonalReportState.loading();
+    notifyListeners();
+
     try {
-      _periodReport = await _repository.getPeriodReport(startDate: _startDate, endDate: _endDate);
-      notifyListeners();
+      _memberPersonalReport = await _repository.getMemberPersonalReport(
+        memberId,
+        yearMonth,
+      );
+      memberPersonalReportState.success();
     } catch (e) {
-      // Keep previous report
+      memberPersonalReportState.error(e.toString());
+    } finally {
+      notifyListeners();
     }
+  }
+
+  void selectMemberForReport(MemberBalanceReportModel member, [String? yearMonth]) {
+    _selectedMemberForReport = member;
+    fetchMemberPersonalReport(member.memberId, yearMonth);
   }
 
   Future<void> fetchMonthlyLedgerReport(String yearMonth) async {
     try {
-      _monthlyLedgerReport = await _repository.getMonthlyLedgerReport(yearMonth);
+      _monthlyLedgerReport = await _repository.getMonthlyLedgerReport(
+        yearMonth,
+      );
       notifyListeners();
     } catch (e) {
       // keep existing

@@ -22,8 +22,6 @@ import '../groups/groups_screen.dart';
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
-
-
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -48,7 +46,8 @@ class DashboardScreen extends StatelessWidget {
           final isMl = l10n.locale.languageCode == 'ml';
 
           return RefreshIndicator(
-            onRefresh: () => context.read<DashboardViewModel>().fetchDashboardSummary(),
+            onRefresh: () =>
+                context.read<DashboardViewModel>().fetchDashboardSummary(),
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -64,19 +63,29 @@ class DashboardScreen extends StatelessWidget {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           elevation: 1,
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const GroupsScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const GroupsScreen(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.group_work_rounded, size: 16),
                         label: Text(
                           isMl ? 'ഗ്രൂപ്പ് വായ്പ' : 'Group Loan',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -85,19 +94,29 @@ class DashboardScreen extends StatelessWidget {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           elevation: 1,
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const MeetingRegisterBookScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const MeetingRegisterBookScreen(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.menu_book_rounded, size: 16),
                         label: Text(
                           isMl ? 'രജിസ്റ്റർ ബുക്ക്' : 'Register Book',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -106,19 +125,29 @@ class DashboardScreen extends StatelessWidget {
                           backgroundColor: const Color(0xFF047857),
                           foregroundColor: Colors.white,
                           elevation: 1,
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const GroupProfitsScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const GroupProfitsScreen(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.trending_up_rounded, size: 16),
                         label: Text(
                           isMl ? 'ലാഭങ്ങൾ' : 'Profits',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -127,19 +156,29 @@ class DashboardScreen extends StatelessWidget {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           elevation: 1,
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const GroupExpensesScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const GroupExpensesScreen(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.receipt_long_rounded, size: 16),
                         label: Text(
                           isMl ? 'ചെലവുകൾ' : 'Expenses',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -148,26 +187,43 @@ class DashboardScreen extends StatelessWidget {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           elevation: 1,
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const ReportsScreen(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.analytics_rounded, size: 16),
                         label: Text(
                           isMl ? 'റിപ്പോർട്ടുകൾ' : 'Reports',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(l10n.translate('financial_categories_overview'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                Text(
+                  l10n.translate('financial_categories_overview'),
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 _buildKpiGrid(context, summary, l10n),
                 const SizedBox(height: 24),
@@ -177,7 +233,11 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         l10n.translate('recent_transactions'),
-                        style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                        style: GoogleFonts.outfit(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -185,20 +245,29 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(width: 4),
                     TextButton.icon(
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const TransactionListScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const TransactionListScreen(),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.arrow_forward_rounded, size: 14),
                       label: Text(
                         l10n.translate('view_all'),
-                        style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                   ],
@@ -208,10 +277,18 @@ class DashboardScreen extends StatelessWidget {
                   selector: (_, vm) => vm.recentTransactions,
                   builder: (context, recentList, _) {
                     if (recentList.isEmpty) {
-                      return Center(child: Padding(padding: const EdgeInsets.all(16), child: Text(l10n.translate('no_recent_transactions'))));
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(l10n.translate('no_recent_transactions')),
+                        ),
+                      );
                     }
                     return Column(
-                      children: recentList.take(5).map((tx) => _buildTransactionCard(context, tx)).toList(),
+                      children: recentList
+                          .take(5)
+                          .map((tx) => _buildTransactionCard(context, tx))
+                          .toList(),
                     );
                   },
                 ),
@@ -223,8 +300,10 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  
-  Widget _buildNextMeetingCard(BuildContext context, DashboardSummaryModel summary) {
+  Widget _buildNextMeetingCard(
+    BuildContext context,
+    DashboardSummaryModel summary,
+  ) {
     if (summary.nextMeeting == null) {
       return Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -268,24 +347,38 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     Text(
                       '${isMl ? "മീറ്റിംഗ്" : "Meetings"} #${meeting.meetingNumber}',
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Date: ${meeting.meetingDate}  •  Period: ${meeting.interestPeriod}',
-                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                      'Date: ${AppFormatters.formatDate(meeting.meetingDate)}  •  Period: ${meeting.interestPeriod}',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     meeting.status,
-                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ],
@@ -296,24 +389,34 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 Text(
                   '${meeting.processedMembers}/${meeting.totalMembers} Members',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: AppColors.primaryDark,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => MeetingDetailScreen(meetingId: meeting.id),
+                        builder: (_) =>
+                            MeetingDetailScreen(meetingId: meeting.id),
                       ),
                     );
                   },
                   icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                  label: Text('Workspace', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                  label: Text(
+                    'Workspace',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -342,18 +445,29 @@ class DashboardScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
                   children: [
-                    const Icon(Icons.link_rounded, size: 16, color: Colors.teal),
+                    const Icon(
+                      Icons.link_rounded,
+                      size: 16,
+                      color: Colors.teal,
+                    ),
                     const SizedBox(width: 6),
                     Text(
-                      isMl ? 'വരും മീറ്റിങ്ങുമായ് ബന്ധിപ്പിക്കും' : 'Will link to current meeting',
-                      style: GoogleFonts.outfit(fontSize: 12, color: Colors.teal),
+                      isMl
+                          ? 'വരും മീറ്റിങ്ങുമായ് ബന്ധിപ്പിക്കും'
+                          : 'Will link to current meeting',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: Colors.teal,
+                      ),
                     ),
                   ],
                 ),
               ),
             TextField(
               controller: amountCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: InputDecoration(
                 labelText: isMl ? 'തുക (₹)' : 'Amount (₹)',
                 border: const OutlineInputBorder(),
@@ -377,20 +491,29 @@ class DashboardScreen extends StatelessWidget {
             child: Text(isMl ? 'റദ്ദാകുക' : 'Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               final val = double.tryParse(amountCtrl.text.trim()) ?? 0.0;
               if (val <= 0) return;
               final desc = descCtrl.text.trim();
               try {
                 final repo = sl<SettingsViewModel>();
-                await repo.updateSurplusAmount(val, description: desc.isNotEmpty ? desc : null, meetingId: meetingId);
+                await repo.updateSurplusAmount(
+                  val,
+                  description: desc.isNotEmpty ? desc : null,
+                  meetingId: meetingId,
+                );
                 if (ctx.mounted) {
                   Navigator.pop(ctx);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(isMl ? 'മിച്ച തുക ചേർത്തു!' : 'Surplus amount added!'),
+                        content: Text(
+                          isMl ? 'മിച്ച തുക ചേർത്തു!' : 'Surplus amount added!',
+                        ),
                         backgroundColor: Colors.teal,
                       ),
                     );
@@ -400,7 +523,10 @@ class DashboardScreen extends StatelessWidget {
               } catch (e) {
                 if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red),
+                    SnackBar(
+                      content: Text('Error: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 }
               }
@@ -412,7 +538,11 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-    Widget _buildKpiGrid(BuildContext context, DashboardSummaryModel summary, AppLocalizations l10n) {
+  Widget _buildKpiGrid(
+    BuildContext context,
+    DashboardSummaryModel summary,
+    AppLocalizations l10n,
+  ) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -421,17 +551,66 @@ class DashboardScreen extends StatelessWidget {
       mainAxisSpacing: 12,
       childAspectRatio: 1.45,
       children: [
-        _buildKpiCard(context, l10n.translate('surplus_fund'), '₹${summary.surplusAmount.toStringAsFixed(2)}', Icons.account_balance_wallet_rounded, Colors.teal, onEdit: () => _showAddSurplusDialog(context, summary.nextMeeting?.id, l10n.locale.languageCode == 'ml')),
-        _buildKpiCard(context, l10n.translate('total_loans'), '₹${summary.totalOutstandingLoans.toStringAsFixed(2)}', Icons.account_balance_rounded, AppColors.error),
-        _buildKpiCard(context, l10n.translate('total_deposits'), '₹${summary.totalDeposits.toStringAsFixed(2)}', Icons.savings_rounded, AppColors.success),
-        _buildKpiCard(context, l10n.translate('total_fines'), '₹${summary.totalOutstandingFines.toStringAsFixed(2)}', Icons.gavel_rounded, Colors.orange),
-        _buildKpiCard(context, l10n.translate('financial_aid'), '₹${summary.totalOutstandingFinancialAid.toStringAsFixed(2)}', Icons.volunteer_activism_rounded, Colors.purple),
-        _buildKpiCard(context, l10n.translate('monthly_contributions'), '₹${summary.totalMonthlyContributions.toStringAsFixed(2)}', Icons.card_membership_rounded, Colors.blue),
+        _buildKpiCard(
+          context,
+          l10n.translate('surplus_fund'),
+          '₹${summary.surplusAmount.toStringAsFixed(2)}',
+          Icons.account_balance_wallet_rounded,
+          Colors.teal,
+          onEdit: () => _showAddSurplusDialog(
+            context,
+            summary.nextMeeting?.id,
+            l10n.locale.languageCode == 'ml',
+          ),
+        ),
+        _buildKpiCard(
+          context,
+          l10n.translate('total_loans'),
+          '₹${summary.totalOutstandingLoans.toStringAsFixed(2)}',
+          Icons.account_balance_rounded,
+          AppColors.error,
+        ),
+        _buildKpiCard(
+          context,
+          l10n.translate('total_deposits'),
+          '₹${summary.totalDeposits.toStringAsFixed(2)}',
+          Icons.savings_rounded,
+          AppColors.success,
+        ),
+        _buildKpiCard(
+          context,
+          l10n.translate('total_fines'),
+          '₹${summary.totalOutstandingFines.toStringAsFixed(2)}',
+          Icons.gavel_rounded,
+          Colors.orange,
+        ),
+        _buildKpiCard(
+          context,
+          l10n.translate('financial_aid'),
+          '₹${summary.totalOutstandingFinancialAid.toStringAsFixed(2)}',
+          Icons.volunteer_activism_rounded,
+          Colors.purple,
+        ),
+        _buildKpiCard(
+          context,
+          l10n.translate('monthly_contributions'),
+          '₹${summary.totalMonthlyContributions.toStringAsFixed(2)}',
+          Icons.card_membership_rounded,
+          Colors.blue,
+        ),
       ],
     );
   }
 
-  Widget _buildKpiCard(BuildContext context, String title, String amount, IconData icon, Color color, {VoidCallback? onEdit, VoidCallback? onExpense}) {
+  Widget _buildKpiCard(
+    BuildContext context,
+    String title,
+    String amount,
+    IconData icon,
+    Color color, {
+    VoidCallback? onEdit,
+    VoidCallback? onExpense,
+  }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -455,7 +634,11 @@ class DashboardScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey),
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -468,33 +651,14 @@ class DashboardScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   amount,
-                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (onEdit != null)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline_rounded, size: 18, color: Colors.teal),
-                      onPressed: onEdit,
-                      tooltip: 'Add to Surplus',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    if (onExpense != null) ...[
-                      const SizedBox(width: 4),
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline_rounded, size: 18, color: Colors.redAccent),
-                        onPressed: onExpense,
-                        tooltip: 'Record Group Expense',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ],
-                ),
             ],
           ),
         ],
@@ -502,15 +666,20 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionCard(BuildContext context, FinancialTransactionModel tx) {
+  Widget _buildTransactionCard(
+    BuildContext context,
+    FinancialTransactionModel tx,
+  ) {
     final l10n = AppLocalizations.of(context);
     final isMl = l10n.locale.languageCode == 'ml';
 
-    final isRepayment = tx.transactionType == 'REPAYMENT' ||
+    final isRepayment =
+        tx.transactionType == 'REPAYMENT' ||
         tx.accountType == 'DEPOSIT' ||
         tx.accountType == 'MONTHLY_CONTRIBUTION' ||
         tx.accountType == 'FINE';
-    final isOutflow = tx.transactionType == 'LOAN_ISSUED' ||
+    final isOutflow =
+        tx.transactionType == 'LOAN_ISSUED' ||
         tx.accountType == 'FINANCIAL_AID' ||
         tx.accountType == 'EXPENSE';
 
@@ -533,7 +702,10 @@ class DashboardScreen extends StatelessWidget {
         ? tx.description!
         : '${tx.accountType} ${tx.transactionType}';
     if (title.contains('Group Loan [')) {
-      title = title.replaceAll(RegExp(r'Group Loan \[.*?\]:?\s*'), 'Group Loan - ');
+      title = title.replaceAll(
+        RegExp(r'Group Loan \[.*?\]:?\s*'),
+        'Group Loan - ',
+      );
       if (title.endsWith(' - ')) {
         title = title.substring(0, title.length - 3);
       }
@@ -570,7 +742,11 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark),
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: AppColors.textDark,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -579,17 +755,27 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     Text(
                       tx.memberName ?? (isMl ? 'അംഗം' : 'Member'),
-                      style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     if (formattedDate.isNotEmpty) ...[
                       Text(
                         '  •  ',
-                        style: GoogleFonts.outfit(fontSize: 11, color: Colors.grey.shade400),
+                        style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          color: Colors.grey.shade400,
+                        ),
                       ),
                       Expanded(
                         child: Text(
                           formattedDate,
-                          style: GoogleFonts.outfit(fontSize: 11, color: Colors.grey.shade600),
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),

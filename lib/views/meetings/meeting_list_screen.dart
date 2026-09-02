@@ -9,6 +9,7 @@ import 'package:ashgledger/core/model/meeting_model.dart';
 import 'meeting_detail_screen.dart';
 import 'schedule_meeting_dialog.dart';
 import 'package:ashgledger/core/common/app_shimmer.dart';
+import 'package:ashgledger/core/common/app_formatters.dart';
 import 'package:ashgledger/core/localization/app_localizations.dart';
 
 class MeetingListScreen extends StatelessWidget {
@@ -189,7 +190,7 @@ class MeetingListScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '${l10n.translate('date')}: ${meeting.meetingDate}',
+                            '${l10n.translate('date')}: ${AppFormatters.formatDate(meeting.meetingDate)}',
                             style: GoogleFonts.outfit(
                               fontSize: 12,
                               color: AppColors.textSecondary,

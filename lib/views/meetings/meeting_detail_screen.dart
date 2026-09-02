@@ -13,7 +13,7 @@ import '../../core/model/meeting_model.dart';
 import '../../core/model/meeting_member_model.dart';
 import 'member_processing_screen.dart';
 import '../../core/common/app_shimmer.dart';
-
+import '../../core/common/app_formatters.dart';
 import '../../core/localization/app_localizations.dart';
 
 class MeetingDetailScreen extends StatelessWidget {
@@ -157,7 +157,7 @@ class MeetingDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Date: ${meeting.meetingDate}',
+            'Date: ${AppFormatters.formatDate(meeting.meetingDate)}',
             style: GoogleFonts.outfit(color: Colors.white70),
           ),
           const SizedBox(height: 16),

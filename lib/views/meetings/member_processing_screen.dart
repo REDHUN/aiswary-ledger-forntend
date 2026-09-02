@@ -1,4 +1,4 @@
-﻿import 'package:ashgledger/viewmodel/member_viewmodel.dart';
+import 'package:ashgledger/viewmodel/member_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +6,7 @@ import 'package:ashgledger/core/theme/app_colors.dart';
 import 'package:ashgledger/core/common/common_error_widget.dart';
 import 'package:ashgledger/core/common/app_snackbar.dart';
 import 'package:ashgledger/core/common/app_shimmer.dart';
+import 'package:ashgledger/core/common/app_formatters.dart';
 import 'package:ashgledger/core/localization/app_localizations.dart';
 import 'package:ashgledger/viewmodel/member_processing_viewmodel.dart';
 import 'package:ashgledger/core/model/member_processing_data_model.dart';
@@ -493,6 +494,18 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                   );
                 }),
 
+                _buildInputField(
+                  title: l10n.translate('contribution_addition'),
+                  controller: _monthlyContributionCtrl,
+                  color: AppColors.accountContribution,
+                  badgeText:
+                      '${l10n.translate('total')}: ₹${baseContribution.toStringAsFixed(2)}',
+                  badgeColor: AppColors.accountContribution,
+                  badgeIcon: Icons.calendar_today_rounded,
+                  updatedText: updatedContributionText,
+                  readOnly: isReadOnly,
+                ),
+
                 Row(
                   children: [
                     Expanded(
@@ -553,18 +566,6 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                       ),
                     ),
                   ],
-                ),
-
-                _buildInputField(
-                  title: l10n.translate('contribution_addition'),
-                  controller: _monthlyContributionCtrl,
-                  color: AppColors.accountContribution,
-                  badgeText:
-                      '${l10n.translate('total')}: ₹${baseContribution.toStringAsFixed(2)}',
-                  badgeColor: AppColors.accountContribution,
-                  badgeIcon: Icons.calendar_today_rounded,
-                  updatedText: updatedContributionText,
-                  readOnly: isReadOnly,
                 ),
 
                 TextField(
@@ -1020,9 +1021,6 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
       barrierDismissible: false,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final dateStr =
-              "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
-
           return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -1068,7 +1066,7 @@ class _MemberProcessingScreenState extends State<MemberProcessingScreen> {
                       suffixIcon: Icon(Icons.calendar_month_rounded),
                     ),
                     child: Text(
-                      dateStr,
+                      AppFormatters.formatDate(selectedDate),
                       style: GoogleFonts.outfit(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

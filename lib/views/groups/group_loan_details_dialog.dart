@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/common/app_formatters.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/model/group_loan_summary_model.dart';
 
@@ -42,7 +43,7 @@ class GroupLoanDetailsDialog extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '$typeName • ${loan.transactionDate}',
+                  '$typeName • ${AppFormatters.formatDate(loan.transactionDate)}',
                   style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
                   overflow: TextOverflow.ellipsis,
                 ),

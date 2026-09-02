@@ -4,11 +4,15 @@ class MemberPersonalReportModel {
   final String fullName;
   final String yearMonth;
   final List<String> availableMonths;
+  final double monthInterest;
+  final double startMonthRemainingLoanBalance;
+  final double monthEndRemainingLoanBalance;
   final double totalDeposits;
   final double totalLoanRepaid;
   final double totalSpecialLoanRepaid;
   final double currentLoanBalance;
   final double currentDepositBalance;
+  final double monthEndDepositBalance;
   final double totalMonthlyContributions;
   final double totalFinesPaid;
   final double totalFinancialAidReceived;
@@ -21,11 +25,15 @@ class MemberPersonalReportModel {
     required this.fullName,
     required this.yearMonth,
     required this.availableMonths,
+    required this.monthInterest,
+    required this.startMonthRemainingLoanBalance,
+    required this.monthEndRemainingLoanBalance,
     required this.totalDeposits,
     required this.totalLoanRepaid,
     required this.totalSpecialLoanRepaid,
     required this.currentLoanBalance,
     required this.currentDepositBalance,
+    required this.monthEndDepositBalance,
     required this.totalMonthlyContributions,
     required this.totalFinesPaid,
     required this.totalFinancialAidReceived,
@@ -45,11 +53,15 @@ class MemberPersonalReportModel {
       fullName: json['fullName'] ?? '',
       yearMonth: json['yearMonth'] ?? '',
       availableMonths: availList,
+      monthInterest: (json['monthInterest'] ?? 0.0).toDouble(),
+      startMonthRemainingLoanBalance: (json['startMonthRemainingLoanBalance'] ?? 0.0).toDouble(),
+      monthEndRemainingLoanBalance: (json['monthEndRemainingLoanBalance'] ?? 0.0).toDouble(),
       totalDeposits: (json['totalDeposits'] ?? 0.0).toDouble(),
       totalLoanRepaid: (json['totalLoanRepaid'] ?? 0.0).toDouble(),
       totalSpecialLoanRepaid: (json['totalSpecialLoanRepaid'] ?? 0.0).toDouble(),
       currentLoanBalance: (json['currentLoanBalance'] ?? 0.0).toDouble(),
       currentDepositBalance: (json['currentDepositBalance'] ?? 0.0).toDouble(),
+      monthEndDepositBalance: (json['monthEndDepositBalance'] ?? 0.0).toDouble(),
       totalMonthlyContributions: (json['totalMonthlyContributions'] ?? 0.0).toDouble(),
       totalFinesPaid: (json['totalFinesPaid'] ?? 0.0).toDouble(),
       totalFinancialAidReceived: (json['totalFinancialAidReceived'] ?? 0.0).toDouble(),
