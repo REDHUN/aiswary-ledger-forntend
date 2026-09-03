@@ -1,4 +1,4 @@
-﻿import '../profits/group_profits_screen.dart';
+import '../profits/group_profits_screen.dart';
 import '../../core/common/app_formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +18,7 @@ import '../reports/reports_screen.dart';
 import '../reports/meeting_register_book_screen.dart';
 import '../expenses/group_expenses_screen.dart';
 import '../groups/groups_screen.dart';
+import '../notifications/send_notification_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -206,6 +207,37 @@ class DashboardScreen extends StatelessWidget {
                         icon: const Icon(Icons.analytics_rounded, size: 16),
                         label: Text(
                           isMl ? 'റിപ്പോർട്ടുകൾ' : 'Reports',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F5132),
+                          foregroundColor: Colors.white,
+                          elevation: 1,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SendNotificationScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.campaign_rounded, size: 16),
+                        label: Text(
+                          isMl ? 'അറിയിപ്പുകൾ' : 'Broadcast',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -609,7 +641,6 @@ class DashboardScreen extends StatelessWidget {
     IconData icon,
     Color color, {
     VoidCallback? onEdit,
-    VoidCallback? onExpense,
   }) {
     return Container(
       padding: const EdgeInsets.all(14),

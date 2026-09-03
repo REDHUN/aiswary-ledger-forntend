@@ -1,13 +1,11 @@
 import '../viewmodel/dashboard_viewmodel.dart';
 import '../viewmodel/member_viewmodel.dart';
 import '../viewmodel/meeting_viewmodel.dart';
-import 'reports/reports_screen.dart';
 import 'settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme/app_colors.dart';
 import '../core/localization/app_localizations.dart';
-import '../viewmodel/language_viewmodel.dart';
 import '../viewmodel/auth_viewmodel.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'members/member_list_screen.dart';
@@ -22,7 +20,6 @@ class MainNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final langVm = context.watch<LanguageViewModel>();
 
     return ValueListenableBuilder<int>(
       valueListenable: _currentIndexNotifier,

@@ -26,6 +26,9 @@ import 'package:ashgledger/viewmodel/settings_viewmodel.dart';
 import 'package:ashgledger/viewmodel/group_viewmodel.dart';
 import 'package:ashgledger/viewmodel/language_viewmodel.dart';
 
+import 'package:ashgledger/core/repository/notification_repository.dart';
+import 'package:ashgledger/viewmodel/notification_viewmodel.dart';
+
 final sl = GetIt.instance;
 
 Future<void> setupLocator() async {
@@ -50,6 +53,7 @@ Future<void> setupLocator() async {
   sl.registerLazySingleton<ReportsRepository>(() => ReportsRepository(sl<ApiClient>()));
   sl.registerLazySingleton<SettingsRepository>(() => SettingsRepository(sl<ApiClient>()));
   sl.registerLazySingleton<GroupRepository>(() => GroupRepository(sl<ApiClient>()));
+  sl.registerLazySingleton<NotificationRepository>(() => NotificationRepository(sl<ApiClient>()));
 
   // ViewModels
   sl.registerFactory(() => ExpenseViewModel(sl()));
@@ -63,4 +67,5 @@ Future<void> setupLocator() async {
   sl.registerFactory<ReportsViewModel>(() => ReportsViewModel(sl<ReportsRepository>()));
   sl.registerFactory<SettingsViewModel>(() => SettingsViewModel(sl<SettingsRepository>()));
   sl.registerFactory<GroupViewModel>(() => GroupViewModel(sl<GroupRepository>()));
+  sl.registerFactory<NotificationViewModel>(() => NotificationViewModel(sl<NotificationRepository>()));
 }

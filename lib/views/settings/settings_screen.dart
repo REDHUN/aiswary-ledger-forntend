@@ -11,6 +11,7 @@ import '../../viewmodel/language_viewmodel.dart';
 import '../groups/groups_screen.dart';
 import 'expense_types_screen.dart';
 import 'special_loan_types_screen.dart';
+import '../notifications/send_notification_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -341,9 +342,44 @@ class _SettingsBody extends StatelessWidget {
               ],
             ),
           ),
-const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-          // Section 4: Application Info
+          // Section 4: Notifications & Communications
+          _buildSectionTitle(isMl ? 'അറിയിപ്പുകൾ (Notifications & Communications)' : 'Notifications & Communications'),
+          const SizedBox(height: 8),
+          Card(
+            elevation: 0,
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppColors.borderLight),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              leading: CircleAvatar(
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: const Icon(Icons.campaign_rounded, color: AppColors.primary),
+              ),
+              title: Text(
+                isMl ? 'അറിയിപ്പ് അയക്കുക (Broadcast Notification)' : 'Broadcast Notification',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+              ),
+              subtitle: Text(
+                isMl ? 'എല്ലാ അംഗങ്ങൾക്കും പുഷ് അറിയിപ്പുകൾ അയക്കുക' : 'Broadcast push notifications to all members',
+                style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SendNotificationScreen()),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Section 5: Application Info
           _buildSectionTitle(isMl ? 'ആപ്പ് വിവരങ്ങൾ (Information)' : 'Information'),
           const SizedBox(height: 8),
           Card(

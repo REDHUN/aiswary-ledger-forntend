@@ -156,6 +156,23 @@ class AppLocalizations {
       'add_contribution': 'വിഹിതം ചേർക്കുക',
       'add_aid': 'സാമ്പത്തിക സഹായം നൽകുക',
       'calc_interest_action': '1% പലിശ',
+
+      // Notifications & Broadcasts
+      'send_notification': 'അറിയിപ്പ് അയക്കുക',
+      'broadcast_notifications': 'അറിയിപ്പുകൾ (Broadcast)',
+      'broadcast_subtitle': 'എല്ലാ അംഗങ്ങൾക്കും തത്സമയം പുഷ് അറിയിപ്പുകൾ അയക്കുക',
+      'notification_title': 'അറിയിപ്പ് തലക്കെട്ട്',
+      'notification_body': 'അറിയിപ്പ് സന്ദേശം',
+      'notification_type': 'അറിയിപ്പ് തരം',
+      'quick_templates': 'വേഗത്തിലുള്ള മാതൃകകൾ (Templates)',
+      'preview': 'അറിയിപ്പ് പ്രിവ്യൂ (Preview)',
+      'send_broadcast': 'അറിയിപ്പ് അയക്കുക',
+      'confirm_send_title': 'അറിയിപ്പ് അയക്കണോ?',
+      'confirm_send_message': 'എല്ലാ സജീവ അംഗങ്ങളുടെയും ഉപകരണങ്ങളിലേക്ക് ഈ പുഷ് അറിയിപ്പ് ഉടൻ അയക്കപ്പെടും.',
+      'targeted_devices': 'ലക്ഷ്യമിട്ട ഫോണുകൾ',
+      'success_count': 'വിജയകരമായി ലഭിച്ചത്',
+      'failed_count': 'പരാജയപ്പെട്ടത്',
+      'status_delivered': 'അറിയിപ്പ് വിജയകരമായി അയച്ചു',
     },
     'en': {
       // General & Navigation
@@ -298,6 +315,23 @@ class AppLocalizations {
       'add_contribution': 'Add Contribution',
       'add_aid': 'Add Financial Aid',
       'calc_interest_action': '1% Interest',
+
+      // Notifications & Broadcasts
+      'send_notification': 'Send Notification',
+      'broadcast_notifications': 'Broadcast Notifications',
+      'broadcast_subtitle': 'Broadcast live push notifications to all members',
+      'notification_title': 'Notification Title',
+      'notification_body': 'Notification Message',
+      'notification_type': 'Notification Type',
+      'quick_templates': 'Quick Templates',
+      'preview': 'Notification Preview',
+      'send_broadcast': 'Send Broadcast',
+      'confirm_send_title': 'Send Broadcast Notification?',
+      'confirm_send_message': 'This will immediately broadcast a push notification to all active member devices.',
+      'targeted_devices': 'Targeted Devices',
+      'success_count': 'Successfully Delivered',
+      'failed_count': 'Failed Deliveries',
+      'status_delivered': 'Notification Delivered',
     },
   };
 

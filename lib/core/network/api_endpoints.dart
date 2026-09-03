@@ -1,16 +1,17 @@
 class ApiEndpoints {
   //static const String baseUrl = "http://localhost:8080/api/v1";
-  //static const String baseUrl = "http://192.168.1.6:8080/api/v1";
-  static const String baseUrl =
-      "https://aiswary-ledger-backend-177358050271.asia-south1.run.app/api/v1";
+  static const String baseUrl = "http://192.168.1.6:8080/api/v1";
+  // static const String baseUrl =
+  //     "https://aiswary-ledger-backend-177358050271.asia-south1.run.app/api/v1";
 
   // Auth
   static const String login = "/auth/login";
 
-  // FCM Tokens
+  // FCM Tokens & Notifications
   static const String fcmTokens = "/fcm-tokens";
   static String deleteFcmToken(String token) =>
       "/fcm-tokens?fcmToken=${Uri.encodeQueryComponent(token)}";
+  static const String broadcastNotification = "/notifications/broadcast";
 
   // Members
   static const String membersPath = "/members";
