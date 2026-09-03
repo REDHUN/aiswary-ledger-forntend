@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ashgledger/core/network/dio_client.dart';
 import 'package:ashgledger/core/network/api_client.dart';
 import 'package:ashgledger/core/services/storage_service.dart';
+import 'package:ashgledger/core/services/fcm_service.dart';
 import 'package:ashgledger/core/repository/auth_repository.dart';
 import 'package:ashgledger/core/repository/member_repository.dart';
 import 'package:ashgledger/core/repository/meeting_repository.dart';
@@ -35,10 +36,13 @@ Future<void> setupLocator() async {
   sl.registerLazySingleton<DioClient>(() => DioClient(sl<StorageService>()));
   sl.registerLazySingleton<ApiClient>(() => ApiClient(sl<DioClient>().dio));
 
+  // Services
+  sl.registerLazySingleton<FcmService>(() => FcmService(sl<StorageService>(), sl<ApiClient>()));
+
   // Repositories
   sl.registerLazySingleton(() => ExpenseRepository(sl()));
   sl.registerLazySingleton(() => GroupProfitRepository(sl()));
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepository(sl<ApiClient>(), sl<StorageService>()));
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepository(sl<ApiClient>(), sl<StorageService>(), sl<FcmService>()));
   sl.registerLazySingleton<MemberRepository>(() => MemberRepository(sl<ApiClient>()));
   sl.registerLazySingleton<MeetingRepository>(() => MeetingRepository(sl<ApiClient>()));
   sl.registerLazySingleton<MemberProcessingRepository>(() => MemberProcessingRepository(sl<ApiClient>()));

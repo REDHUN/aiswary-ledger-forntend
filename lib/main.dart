@@ -17,11 +17,32 @@ import 'package:ashgledger/views/auth/login_screen.dart';
 import 'package:ashgledger/views/main_navigation_screen.dart';
 import 'package:ashgledger/views/member_portal/member_portal_screen.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:ashgledger/firebase_options.dart';
+import 'package:ashgledger/core/services/fcm_service.dart';
 import 'package:ashgledger/views/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (FcmService.isSupported) {
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    } catch (e) {
+      debugPrint('Firebase initialization error: $e');
+    }
+  }
+
   await setupLocator();
+
+  if (FcmService.isSupported) {
+    await sl<FcmService>().initialize();
+  }
+
   runApp(const AiswaryaLedgerApp());
 }
 

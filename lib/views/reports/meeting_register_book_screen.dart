@@ -40,22 +40,34 @@ class _MeetingRegisterBookBody extends StatefulWidget {
   const _MeetingRegisterBookBody({this.isReadOnly = false});
 
   @override
-  State<_MeetingRegisterBookBody> createState() => _MeetingRegisterBookBodyState();
+  State<_MeetingRegisterBookBody> createState() =>
+      _MeetingRegisterBookBodyState();
 }
 
 class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
   int? _selectedMeetingId;
   RegisterFilterMode _filterMode = RegisterFilterMode.all;
 
-
-  void _showIssueGroupLoanDialog(BuildContext context, int meetingId, ReportsViewModel vm) {
+  void _showIssueGroupLoanDialog(
+    BuildContext context,
+    int meetingId,
+    ReportsViewModel vm,
+  ) {
     showDialog(
       context: context,
       builder: (_) => MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => sl<GroupViewModel>()..fetchGroups()..fetchLoanHistory()),
-          ChangeNotifierProvider(create: (_) => sl<SettingsViewModel>()..fetchSpecialLoanTypes()),
-          ChangeNotifierProvider(create: (_) => sl<MemberViewModel>()..fetchMembers()),
+          ChangeNotifierProvider(
+            create: (_) => sl<GroupViewModel>()
+              ..fetchGroups()
+              ..fetchLoanHistory(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => sl<SettingsViewModel>()..fetchSpecialLoanTypes(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => sl<MemberViewModel>()..fetchMembers(),
+          ),
         ],
         child: IssueGroupLoanDialog(preselectedMeetingId: meetingId),
       ),
@@ -67,9 +79,11 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
     });
   }
 
-  
-
-    void _showAddProfitDialog(BuildContext context, int meetingId, ReportsViewModel vm) {
+  void _showAddProfitDialog(
+    BuildContext context,
+    int meetingId,
+    ReportsViewModel vm,
+  ) {
     showDialog(
       context: context,
       builder: (_) => AddGroupProfitDialog(preselectedMeetingId: meetingId),
@@ -81,12 +95,18 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
     });
   }
 
-  void _showAddExpenseDialog(BuildContext context, int meetingId, ReportsViewModel vm) {
+  void _showAddExpenseDialog(
+    BuildContext context,
+    int meetingId,
+    ReportsViewModel vm,
+  ) {
     showDialog(
       context: context,
       builder: (_) => MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => sl<ExpenseViewModel>()..fetchExpenseTypes()),
+          ChangeNotifierProvider(
+            create: (_) => sl<ExpenseViewModel>()..fetchExpenseTypes(),
+          ),
         ],
         child: AddGroupExpenseDialog(preselectedMeetingId: meetingId),
       ),
@@ -96,7 +116,6 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +140,8 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
 
           if (vm.meetingReports.isNotEmpty) {
             final validIds = vm.meetingReports.map((m) => m.meetingId).toList();
-            if (_selectedMeetingId == null || !validIds.contains(_selectedMeetingId)) {
+            if (_selectedMeetingId == null ||
+                !validIds.contains(_selectedMeetingId)) {
               final defaultMeeting = vm.meetingReports.firstWhere(
                 (m) => m.status.toUpperCase() == 'OPEN',
                 orElse: () => vm.meetingReports.firstWhere(
@@ -162,13 +182,23 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                                 color: AppColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.event_note_rounded, color: AppColors.primary, size: 18),
+                              child: const Icon(
+                                Icons.event_note_rounded,
+                                color: AppColors.primary,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                isMl ? 'മീറ്റിംഗ് തിരഞ്ഞെടുക്കുക:' : 'Select Meeting:',
-                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark),
+                                isMl
+                                    ? 'മീറ്റിംഗ് തിരഞ്ഞെടുക്കുക:'
+                                    : 'Select Meeting:',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: AppColors.textDark,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -177,43 +207,71 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                         const SizedBox(height: 12),
                         DropdownButtonFormField<int>(
                           initialValue: _selectedMeetingId,
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: AppColors.primary,
+                          ),
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: AppColors.bgLight,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.borderLight),
+                              borderSide: const BorderSide(
+                                color: AppColors.borderLight,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                                width: 1.5,
+                              ),
                             ),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           isExpanded: true,
                           items: vm.meetingReports.map((m) {
-                            final isCompleted = m.status.toUpperCase() == 'COMPLETED';
+                            final isCompleted =
+                                m.status.toUpperCase() == 'COMPLETED';
                             return DropdownMenuItem<int>(
                               value: m.meetingId,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       isMl
                                           ? 'മീറ്റിംഗ് #${m.meetingNumber} (${AppFormatters.formatDate(m.meetingDate)})'
                                           : 'Meeting #${m.meetingNumber} (${AppFormatters.formatDate(m.meetingDate)})',
-                                      style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textDark,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: isCompleted ? AppColors.success.withValues(alpha: 0.1) : AppColors.info.withValues(alpha: 0.1),
+                                      color: isCompleted
+                                          ? AppColors.success.withValues(
+                                              alpha: 0.1,
+                                            )
+                                          : AppColors.info.withValues(
+                                              alpha: 0.1,
+                                            ),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -221,7 +279,9 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                                       style: GoogleFonts.outfit(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
-                                        color: isCompleted ? AppColors.success : AppColors.info,
+                                        color: isCompleted
+                                            ? AppColors.success
+                                            : AppColors.info,
                                       ),
                                     ),
                                   ),
@@ -246,10 +306,18 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
 
                 // Register Book Details Card
                 if (vm.registerState.isLoading)
-                  const AppShimmer(width: double.infinity, height: 320, borderRadius: 16)
+                  const AppShimmer(
+                    width: double.infinity,
+                    height: 320,
+                    borderRadius: 16,
+                  )
                 else if (vm.registerState.hasError)
                   CommonErrorWidget(
-                    message: vm.registerState.message ?? (isMl ? 'ലെഡ്ജർ വിവരങ്ങൾ ലഭ്യമാക്കാൻ സാധിച്ചില്ല' : 'Failed to load register book'),
+                    message:
+                        vm.registerState.message ??
+                        (isMl
+                            ? 'ലെഡ്ജർ വിവരങ്ങൾ ലഭ്യമാക്കാൻ സാധിച്ചില്ല'
+                            : 'Failed to load register book'),
                     onRetry: () {
                       if (_selectedMeetingId != null) {
                         vm.fetchCompletedMeetingRegister(_selectedMeetingId!);
@@ -263,7 +331,9 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                     padding: const EdgeInsets.all(24),
                     alignment: Alignment.center,
                     child: Text(
-                      isMl ? 'ഈ മീറ്റിംഗിന്റെ വിവരങ്ങൾ ലഭ്യമായിട്ടില്ല.' : 'No register details available for this meeting.',
+                      isMl
+                          ? 'ഈ മീറ്റിംഗിന്റെ വിവരങ്ങൾ ലഭ്യമായിട്ടില്ല.'
+                          : 'No register details available for this meeting.',
                       style: GoogleFonts.outfit(color: AppColors.textSecondary),
                     ),
                   ),
@@ -275,32 +345,54 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
     );
   }
 
-  Widget _buildRegisterCard(BuildContext context, CompletedMeetingRegisterModel reg, ReportsViewModel vm, bool isMl) {
-    final showVaravu = _filterMode == RegisterFilterMode.all || _filterMode == RegisterFilterMode.varavu;
-    final showExpense = _filterMode == RegisterFilterMode.all || _filterMode == RegisterFilterMode.expense;
+  Widget _buildRegisterCard(
+    BuildContext context,
+    CompletedMeetingRegisterModel reg,
+    ReportsViewModel vm,
+    bool isMl,
+  ) {
+    final showVaravu =
+        _filterMode == RegisterFilterMode.all ||
+        _filterMode == RegisterFilterMode.varavu;
+    final showExpense =
+        _filterMode == RegisterFilterMode.all ||
+        _filterMode == RegisterFilterMode.expense;
 
-    double totalVaravu = reg.totalLoanRepaymentsCollected +
+    double totalVaravu =
+        reg.totalLoanRepaymentsCollected +
         reg.totalDepositsCollected +
         reg.totalMonthlyContributionsCollected +
         reg.totalSpecialLoanRepaymentsCollected +
         reg.totalFinesCollected +
         reg.totalGroupProfit;
 
-    double totalChelavu = reg.totalFinancialAidDisbursed + reg.totalGroupExpenses;
+    double totalChelavu =
+        reg.totalFinancialAidDisbursed + reg.totalGroupExpenses;
     int? activeActionMeetingId;
-    final openMeeting = vm.meetingReports.where((m) => m.status.toUpperCase() == "OPEN").firstOrNull;
+    final openMeeting = vm.meetingReports
+        .where((m) => m.status.toUpperCase() == "OPEN")
+        .firstOrNull;
     if (openMeeting != null) {
       activeActionMeetingId = openMeeting.meetingId;
     } else {
-      final completed = vm.meetingReports.where((m) => m.status.toUpperCase() == "COMPLETED").toList();
+      final completed = vm.meetingReports
+          .where((m) => m.status.toUpperCase() == "COMPLETED")
+          .toList();
       if (completed.isNotEmpty) {
         completed.sort((a, b) => b.meetingNumber.compareTo(a.meetingNumber));
         activeActionMeetingId = completed.first.meetingId;
       }
     }
-    final bool canShowActions = !widget.isReadOnly && reg.meetingId == activeActionMeetingId;
-    final selectedReport = vm.meetingReports.where((m) => m.meetingId == reg.meetingId).firstOrNull;
-    final bool isCompleted = selectedReport != null && selectedReport.status.toUpperCase() == "COMPLETED";
+    final bool canShowActions =
+        !widget.isReadOnly &&
+        reg.meetingId == activeActionMeetingId &&
+        openMeeting == null;
+    final selectedReport = vm.meetingReports
+        .where((m) => m.meetingId == reg.meetingId)
+        .firstOrNull;
+    final bool isCompleted =
+        selectedReport != null &&
+        selectedReport.status.toUpperCase() == "COMPLETED";
 
     return Card(
       elevation: 2,
@@ -327,7 +419,11 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                           color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.menu_book_rounded, color: AppColors.primary, size: 22),
+                        child: const Icon(
+                          Icons.menu_book_rounded,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -335,7 +431,9 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isMl ? 'മീറ്റിംഗ് രജിസ്റ്റർ ബുക്ക്' : 'Meeting Register Book',
+                              isMl
+                                  ? 'മീറ്റിംഗ് രജിസ്റ്റർ ബുക്ക്'
+                                  : 'Meeting Register Book',
                               style: GoogleFonts.outfit(
                                 color: AppColors.textDark,
                                 fontWeight: FontWeight.bold,
@@ -347,7 +445,11 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                               isMl
                                   ? 'തീയതി: ${AppFormatters.formatDate(reg.meetingDate)} | പിരീഡ്: ${reg.interestPeriod}'
                                   : 'Date: ${AppFormatters.formatDate(reg.meetingDate)} | Period: ${reg.interestPeriod}',
-                              style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w500),
+                              style: GoogleFonts.outfit(
+                                color: AppColors.textSecondary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
@@ -358,14 +460,21 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                    ),
                   ),
                   child: Text(
-                    isMl ? 'മീറ്റിംഗ് #${reg.meetingNumber}' : 'Meeting #${reg.meetingNumber}',
+                    isMl
+                        ? 'മീറ്റിംഗ് #${reg.meetingNumber}'
+                        : 'Meeting #${reg.meetingNumber}',
                     style: GoogleFonts.outfit(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -386,17 +495,29 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 2,
+                        ),
                         elevation: 1,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      onPressed: () => _showAddExpenseDialog(context, reg.meetingId, vm),
-                      icon: const Icon(Icons.add_circle_outline_rounded, size: 15),
+                      onPressed: () =>
+                          _showAddExpenseDialog(context, reg.meetingId, vm),
+                      icon: const Icon(
+                        Icons.add_circle_outline_rounded,
+                        size: 15,
+                      ),
                       label: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           isMl ? 'ചെലവ് നൽകുക' : 'Add Expense',
-                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -407,17 +528,26 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accountLoan,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 2,
+                        ),
                         elevation: 1,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      onPressed: () => _showIssueGroupLoanDialog(context, reg.meetingId, vm),
+                      onPressed: () =>
+                          _showIssueGroupLoanDialog(context, reg.meetingId, vm),
                       icon: const Icon(Icons.handshake_rounded, size: 15),
                       label: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           isMl ? 'ഗ്രൂപ്പ് വായ്പ' : 'Group Loan',
-                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -428,17 +558,26 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF047857),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 2,
+                        ),
                         elevation: 1,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      onPressed: () => _showAddProfitDialog(context, reg.meetingId, vm),
+                      onPressed: () =>
+                          _showAddProfitDialog(context, reg.meetingId, vm),
                       icon: const Icon(Icons.trending_up_rounded, size: 15),
                       label: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           isMl ? 'ലാഭം ലഭിച്ചു' : 'Add Profit',
-                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -447,7 +586,7 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
               ),
               const SizedBox(height: 16),
             ],
-                        // Filter Options (All, Varavu, Expense)
+            // Filter Options (All, Varavu, Expense)
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -516,17 +655,21 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
               if (reg.specialLoanBreakdown.isNotEmpty) ...[
                 for (var item in reg.specialLoanBreakdown) ...[
                   _buildRow(
-                    label: isMl ? '${item.specialLoanTypeName} അടവ്' : '${item.specialLoanTypeName} Repayment',
+                    label: isMl
+                        ? '${item.specialLoanTypeName} അടവ്'
+                        : '${item.specialLoanTypeName} Repayment',
                     amount: item.amount,
                     isVaravu: true,
                     icon: Icons.stars_rounded,
                     color: AppColors.accountFinancialAid,
                   ),
                   const SizedBox(height: 8),
-                ]
+                ],
               ] else ...[
                 _buildRow(
-                  label: isMl ? 'സ്പെഷ്യൽ വായ്പ തിരികെ അടവ്' : 'Special Loan Repayments',
+                  label: isMl
+                      ? 'സ്പെഷ്യൽ വായ്പ തിരികെ അടവ്'
+                      : 'Special Loan Repayments',
                   amount: reg.totalSpecialLoanRepaymentsCollected,
                   isVaravu: true,
                   icon: Icons.stars_rounded,
@@ -545,13 +688,15 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                 for (var prof in reg.groupProfitsBreakdown) ...[
                   const SizedBox(height: 8),
                   _buildRow(
-                    label: isMl ? 'ലാഭം: ${prof.title}' : 'Profit: ${prof.title}',
+                    label: isMl
+                        ? 'ലാഭം: ${prof.title}'
+                        : 'Profit: ${prof.title}',
                     amount: prof.amount,
                     isVaravu: true,
                     icon: Icons.trending_up_rounded,
                     color: const Color(0xFF047857),
                   ),
-                ]
+                ],
               ] else if (reg.totalGroupProfit > 0) ...[
                 const SizedBox(height: 8),
                 _buildRow(
@@ -563,7 +708,12 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                 ),
               ],
               const SizedBox(height: 10),
-              _buildSubtotalBar(isMl ? 'ആകെ വരവ്:' : 'Total Collections:', totalVaravu, Colors.teal.shade800, '+'),
+              _buildSubtotalBar(
+                isMl ? 'ആകെ വരവ്:' : 'Total Collections:',
+                totalVaravu,
+                Colors.teal.shade800,
+                '+',
+              ),
               const SizedBox(height: 18),
             ],
 
@@ -579,7 +729,9 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
               if (reg.loansIssuedBreakdown.isNotEmpty) ...[
                 for (var loanItem in reg.loansIssuedBreakdown) ...[
                   _buildRow(
-                    label: isMl ? 'വായ്പ വിതരണം: ${loanItem.categoryName}' : 'Loan Issued: ${loanItem.categoryName}',
+                    label: isMl
+                        ? 'വായ്പ വിതരണം: ${loanItem.categoryName}'
+                        : 'Loan Issued: ${loanItem.categoryName}',
                     amount: loanItem.amount,
                     isVaravu: false,
                     icon: Icons.handshake_rounded,
@@ -628,7 +780,12 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                 ),
               ],
               const SizedBox(height: 10),
-              _buildSubtotalBar(isMl ? 'ആകെ ചെലവ്:' : 'Total Expenses:', totalChelavu, Colors.deepOrange.shade900, '-'),
+              _buildSubtotalBar(
+                isMl ? 'ആകെ ചെലവ്:' : 'Total Expenses:',
+                totalChelavu,
+                Colors.deepOrange.shade900,
+                '-',
+              ),
               const SizedBox(height: 18),
             ],
 
@@ -643,7 +800,9 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -651,12 +810,20 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                       Expanded(
                         child: Row(
                           children: [
-                            const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 20),
+                            const Icon(
+                              Icons.account_balance_wallet_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 isMl ? 'ആകെ സ്വീകരിച്ച തുക' : 'Net Collection',
-                                style: GoogleFonts.outfit(color: AppColors.textDark, fontSize: 13, fontWeight: FontWeight.w600),
+                                style: GoogleFonts.outfit(
+                                  color: AppColors.textDark,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
@@ -684,7 +851,9 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                     decoration: BoxDecoration(
                       color: AppColors.accentGold.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.35)),
+                      border: Border.all(
+                        color: AppColors.accentGold.withValues(alpha: 0.35),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -695,10 +864,16 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                               Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accentGold.withValues(alpha: 0.2),
+                                  color: AppColors.accentGold.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(Icons.savings_rounded, color: Color(0xFFB78103), size: 20),
+                                child: const Icon(
+                                  Icons.savings_rounded,
+                                  color: Color(0xFFB78103),
+                                  size: 20,
+                                ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -706,14 +881,26 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      isMl ? '\u0d2e\u0d3f\u0d1a\u0d4d\u0d1a \u0d24\u0d41\u0d15' : 'Surplus Fund',
-                                      style: GoogleFonts.outfit(color: AppColors.textDark, fontSize: 13, fontWeight: FontWeight.bold),
+                                      isMl
+                                          ? '\u0d2e\u0d3f\u0d1a\u0d4d\u0d1a \u0d24\u0d41\u0d15'
+                                          : 'Surplus Fund',
+                                      style: GoogleFonts.outfit(
+                                        color: AppColors.textDark,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
                                     Text(
-                                      isMl ? '\u0d07\u0d28\u0d4d\u0d28\u0d24\u0d46 \u0d2e\u0d40\u0d31\u0d4d\u0d31\u0d3f\u0d19\u0d4d\u0d19\u0d3f\u0d28\u0d4d\u0d31\u0d46 \u0d2e\u0d3f\u0d1a\u0d4d\u0d1a \u0d24\u0d41\u0d15' : 'Surplus for this meeting',
-                                      style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w500),
+                                      isMl
+                                          ? '\u0d07\u0d28\u0d4d\u0d28\u0d24\u0d46 \u0d2e\u0d40\u0d31\u0d4d\u0d31\u0d3f\u0d19\u0d4d\u0d19\u0d3f\u0d28\u0d4d\u0d31\u0d46 \u0d2e\u0d3f\u0d1a\u0d4d\u0d1a \u0d24\u0d41\u0d15'
+                                          : 'Surplus for this meeting',
+                                      style: GoogleFonts.outfit(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
@@ -725,11 +912,18 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFF8E7),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.accentGold.withValues(alpha: 0.5)),
+                            border: Border.all(
+                              color: AppColors.accentGold.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
                           ),
                           child: Text(
                             '₹${reg.surplusAmount.toStringAsFixed(2)}',
@@ -770,16 +964,17 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
           Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: textColor),
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -788,7 +983,12 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
     );
   }
 
-  Widget _buildSubtotalBar(String title, double amount, Color textColor, String sign) {
+  Widget _buildSubtotalBar(
+    String title,
+    double amount,
+    Color textColor,
+    String sign,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -802,14 +1002,22 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: textColor),
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           const SizedBox(width: 8),
           Text(
             '$sign₹${amount.toStringAsFixed(2)}',
-            style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
         ],
       ),
@@ -860,8 +1068,12 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
                     maxLines: 1,
                     style: GoogleFonts.outfit(
                       fontSize: 11,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -881,8 +1093,12 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
     required Color color,
   }) {
     final sign = isVaravu ? '+' : '-';
-    final bgColor = isVaravu ? Colors.green.withValues(alpha: 0.03) : Colors.red.withValues(alpha: 0.03);
-    final borderColor = isVaravu ? Colors.green.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.15);
+    final bgColor = isVaravu
+        ? Colors.green.withValues(alpha: 0.03)
+        : Colors.red.withValues(alpha: 0.03);
+    final borderColor = isVaravu
+        ? Colors.green.withValues(alpha: 0.15)
+        : Colors.red.withValues(alpha: 0.15);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -905,7 +1121,11 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.outfit(color: AppColors.textDark, fontSize: 13, fontWeight: FontWeight.w600),
+              style: GoogleFonts.outfit(
+                color: AppColors.textDark,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -914,7 +1134,9 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: isVaravu ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+              color: isVaravu
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(

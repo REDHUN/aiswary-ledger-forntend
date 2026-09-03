@@ -6,6 +6,7 @@ class StorageService {
   static const String _keyRole = 'user_role';
   static const String _keyUserId = 'user_id';
   static const String _keyMemberId = 'member_id';
+  static const String _keyFcmToken = 'fcm_token';
 
   final SharedPreferences _prefs;
 
@@ -36,6 +37,16 @@ class StorageService {
   int? getMemberId() => _prefs.getInt(_keyMemberId);
   bool isAdmin() => getRole() == 'ADMIN';
 
+  Future<void> saveFcmToken(String token) async {
+    await _prefs.setString(_keyFcmToken, token);
+  }
+
+  String? getFcmToken() => _prefs.getString(_keyFcmToken);
+
+  Future<void> clearFcmToken() async {
+    await _prefs.remove(_keyFcmToken);
+  }
+
   bool hasSession() {
     final token = getToken();
     return token != null && token.isNotEmpty;
@@ -45,7 +56,12 @@ class StorageService {
   Future<bool> setString(String key, String value) => _prefs.setString(key, value);
 
   Future<void> clearSession() async {
-    await _prefs.clear();
+    await _prefs.remove(_keyToken);
+    await _prefs.remove(_keyUsername);
+    await _prefs.remove(_keyRole);
+    await _prefs.remove(_keyUserId);
+    await _prefs.remove(_keyMemberId);
+    await _prefs.remove(_keyFcmToken);
   }
 }
 

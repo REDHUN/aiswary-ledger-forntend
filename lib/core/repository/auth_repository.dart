@@ -2,12 +2,14 @@ import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
 import '../model/user_model.dart';
 import '../services/storage_service.dart';
+import '../services/fcm_service.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
   final StorageService _storageService;
+  final FcmService _fcmService;
 
-  AuthRepository(this._apiClient, this._storageService);
+  AuthRepository(this._apiClient, this._storageService, this._fcmService);
 
   Future<UserModel> login(String username, String password) async {
     final response = await _apiClient.request(
@@ -27,10 +29,23 @@ class AuthRepository {
       memberId: user.memberId,
     );
 
+    // Get FCM token upon successful login
+    try {
+      await _fcmService.requestPermission();
+      await _fcmService.getToken();
+    } catch (_) {
+      // Continue even if FCM fails
+    }
+
     return user;
   }
 
   Future<void> logout() async {
+    // Delete FCM token upon logout
+    try {
+      await _fcmService.deleteToken();
+    } catch (_) {}
+
     await _storageService.clearSession();
   }
 
