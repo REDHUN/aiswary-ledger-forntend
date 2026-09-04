@@ -12,6 +12,7 @@ import '../groups/groups_screen.dart';
 import 'expense_types_screen.dart';
 import 'special_loan_types_screen.dart';
 import '../notifications/send_notification_screen.dart';
+import '../notifications/notifications_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -354,27 +355,54 @@ class _SettingsBody extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               side: const BorderSide(color: AppColors.borderLight),
             ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              leading: CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: const Icon(Icons.campaign_rounded, color: AppColors.primary),
-              ),
-              title: Text(
-                isMl ? 'അറിയിപ്പ് അയക്കുക (Broadcast Notification)' : 'Broadcast Notification',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
-              ),
-              subtitle: Text(
-                isMl ? 'എല്ലാ അംഗങ്ങൾക്കും പുഷ് അറിയിപ്പുകൾ അയക്കുക' : 'Broadcast push notifications to all members',
-                style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SendNotificationScreen()),
-                );
-              },
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                    child: const Icon(Icons.notifications_active_rounded, color: Colors.blue),
+                  ),
+                  title: Text(
+                    isMl ? 'അറിയിപ്പുകൾ (Notification Inbox)' : 'Notification Inbox',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                  ),
+                  subtitle: Text(
+                    isMl ? 'ലഭിച്ച അറിയിപ്പുകൾ കാണുക' : 'View received notifications & alerts',
+                    style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 1, indent: 64, color: AppColors.borderLight),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    child: const Icon(Icons.campaign_rounded, color: AppColors.primary),
+                  ),
+                  title: Text(
+                    isMl ? 'അറിയിപ്പ് അയക്കുക (Send Notification)' : 'Send Notification',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.textDark),
+                  ),
+                  subtitle: Text(
+                    isMl ? 'അംഗങ്ങൾക്ക് പുഷ് അറിയിപ്പുകൾ അയക്കുക' : 'Send push alerts to all or specific members',
+                    style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SendNotificationScreen()),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 20),

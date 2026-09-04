@@ -2,6 +2,8 @@ import '../viewmodel/dashboard_viewmodel.dart';
 import '../viewmodel/member_viewmodel.dart';
 import '../viewmodel/meeting_viewmodel.dart';
 import 'settings/settings_screen.dart';
+import '../viewmodel/notification_viewmodel.dart';
+import 'notifications/notifications_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme/app_colors.dart';
@@ -28,6 +30,48 @@ class MainNavigationScreen extends StatelessWidget {
           appBar: AppBar(
             title: Text(l10n.translate('app_title')),
             actions: [
+              Consumer<NotificationViewModel>(
+                builder: (context, notifVm, _) {
+                  final count = notifVm.unreadCount;
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.notifications_outlined),
+                        tooltip: 'Notifications',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                          );
+                        },
+                      ),
+                      if (count > 0)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.redAccent,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                            child: Text(
+                              count > 99 ? '99+' : '$count',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.settings_rounded),
                 tooltip: 'Settings',

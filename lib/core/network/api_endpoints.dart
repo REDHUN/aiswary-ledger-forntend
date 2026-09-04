@@ -11,6 +11,12 @@ class ApiEndpoints {
   static const String fcmTokens = "/fcm-tokens";
   static String deleteFcmToken(String token) =>
       "/fcm-tokens?fcmToken=${Uri.encodeQueryComponent(token)}";
+  static const String notifications = "/notifications";
+  static const String notificationUnreadCount = "/notifications/unread-count";
+  static String markNotificationAsRead(int id) => "/notifications/$id/read";
+  static const String markAllNotificationsAsRead = "/notifications/read-all";
+  static const String testNotification = "/notifications/test";
+  static const String testMyDevice = "/notifications/test-my-device";
   static const String broadcastNotification = "/notifications/broadcast";
 
   // Members

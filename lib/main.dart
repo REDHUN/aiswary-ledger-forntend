@@ -1,4 +1,3 @@
-import 'package:ashgledger/viewmodel/group_profit_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -13,9 +12,16 @@ import 'package:ashgledger/viewmodel/meeting_viewmodel.dart';
 import 'package:ashgledger/viewmodel/member_processing_viewmodel.dart';
 import 'package:ashgledger/viewmodel/dashboard_viewmodel.dart';
 import 'package:ashgledger/viewmodel/reports_viewmodel.dart';
+import 'package:ashgledger/viewmodel/group_profit_viewmodel.dart';
+import 'package:ashgledger/viewmodel/notification_viewmodel.dart';
 import 'package:ashgledger/views/auth/login_screen.dart';
 import 'package:ashgledger/views/main_navigation_screen.dart';
 import 'package:ashgledger/views/member_portal/member_portal_screen.dart';
+import 'package:ashgledger/views/member_portal/member_all_transactions_screen.dart';
+import 'package:ashgledger/views/meetings/meeting_list_screen.dart';
+import 'package:ashgledger/views/meetings/meeting_detail_screen.dart';
+import 'package:ashgledger/views/notifications/notifications_screen.dart';
+import 'package:ashgledger/views/notifications/send_notification_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -61,6 +67,7 @@ class AiswaryaLedgerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<DashboardViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<ReportsViewModel>()),
         ChangeNotifierProvider(create: (_) => sl<GroupProfitViewModel>()),
+        ChangeNotifierProvider(create: (_) => sl<NotificationViewModel>()..fetchUnreadCount()),
       ],
       child: Selector<LanguageViewModel, Locale>(
         selector: (_, vm) => vm.locale,
@@ -81,6 +88,24 @@ class AiswaryaLedgerApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             home: const SplashScreen(),
+            routes: {
+              '/notifications': (context) => const NotificationsScreen(),
+              '/send-notification': (context) => const SendNotificationScreen(),
+              '/meetings': (context) => const MeetingListScreen(),
+              '/transactions': (context) => const MemberAllTransactionsScreen(),
+              '/loans': (context) => const MemberPortalScreen(),
+              '/fines': (context) => const MemberPortalScreen(),
+            },
+            onGenerateRoute: (settings) {
+              if (settings.name == '/meeting-details') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                final meetingId = args?['meetingId'] as int? ?? 0;
+                return MaterialPageRoute(
+                  builder: (_) => MeetingDetailScreen(meetingId: meetingId),
+                );
+              }
+              return null;
+            },
           );
         },
       ),

@@ -14,6 +14,8 @@ import '../../viewmodel/member_portal_viewmodel.dart';
 import '../../core/model/member_model.dart';
 import '../../core/model/member_account_model.dart';
 import '../../core/model/member_personal_report_model.dart';
+import '../../viewmodel/notification_viewmodel.dart';
+import '../notifications/notifications_screen.dart';
 import '../auth/login_screen.dart';
 import 'member_all_transactions_screen.dart';
 
@@ -69,6 +71,48 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
         actions: [
+          Consumer<NotificationViewModel>(
+            builder: (context, notifVm, _) {
+              final count = notifVm.unreadCount;
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    tooltip: isMl ? 'അറിയിപ്പുകൾ' : 'Notifications',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                      );
+                    },
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Text(
+                          count > 99 ? '99+' : '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () =>
