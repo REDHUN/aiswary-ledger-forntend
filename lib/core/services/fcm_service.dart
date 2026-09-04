@@ -15,7 +15,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    debugPrint('FCM Background message received: ${message.messageId} | ${message.notification?.title}');
+    debugPrint(
+      'FCM Background message received: ${message.messageId} | ${message.notification?.title}',
+    );
   } catch (e) {
     debugPrint('Error in FCM background handler: $e');
   }
@@ -55,7 +57,9 @@ class FcmService {
   /// Initialize FCM listeners, local notification channels, and token sync
   Future<void> initialize() async {
     if (!isSupported) {
-      debugPrint('FCM is not supported on this platform: $defaultTargetPlatform');
+      debugPrint(
+        'FCM is not supported on this platform: $defaultTargetPlatform',
+      );
       return;
     }
 
@@ -99,7 +103,9 @@ class FcmService {
 
       // 7. Sync token with backend if user is already logged in
       if (_storageService.hasSession()) {
-        debugPrint('Active user session detected. Syncing FCM token with backend...');
+        debugPrint(
+          'Active user session detected. Syncing FCM token with backend...',
+        );
         await getToken();
       }
     } catch (e) {

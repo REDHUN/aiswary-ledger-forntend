@@ -27,7 +27,9 @@ class SendNotificationScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => sl<NotificationViewModel>()),
-        ChangeNotifierProvider(create: (_) => sl<MemberViewModel>()..fetchMembers()),
+        ChangeNotifierProvider(
+          create: (_) => sl<MemberViewModel>()..fetchMembers(),
+        ),
       ],
       child: _SendNotificationBody(
         initialTitle: initialTitle,
@@ -81,6 +83,13 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
       'labelMl': 'യോഗ അറിയിപ്പ്',
       'icon': Icons.event_note_rounded,
       'color': Colors.blue,
+    },
+    {
+      'value': 'MEETING_REPORT',
+      'labelEn': 'Meeting Report / Register Book',
+      'labelMl': 'മീറ്റിംഗ് റിപ്പോർട്ട് / രജിസ്റ്റർ ബുക്ക്',
+      'icon': Icons.menu_book_rounded,
+      'color': Colors.indigo,
     },
     {
       'value': 'PAYMENT',
@@ -155,7 +164,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isMl ? 'ദയവായി ഒരു അംഗത്തെ തിരഞ്ഞെടുക്കുക' : 'Please select a member',
+            isMl
+                ? 'ദയവായി ഒരു അംഗത്തെ തിരഞ്ഞെടുക്കുക'
+                : 'Please select a member',
           ),
           backgroundColor: AppColors.error,
         ),
@@ -165,11 +176,11 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
 
     final targetDesc = _isBroadcast
         ? (isMl
-            ? 'എല്ലാ രജിസ്റ്റർ ചെയ്ത അംഗങ്ങളുടെ ഫോണുകളിലേക്കും'
-            : 'to all registered member devices')
+              ? 'എല്ലാ രജിസ്റ്റർ ചെയ്ത അംഗങ്ങളുടെ ഫോണുകളിലേക്കും'
+              : 'to all registered member devices')
         : (isMl
-            ? '${_selectedMember!.fullName} എന്ന അംഗത്തിന്റെ ഫോണിലേക്ക്'
-            : 'to ${_selectedMember!.fullName}');
+              ? '${_selectedMember!.fullName} എന്ന അംഗത്തിന്റെ ഫോണിലേക്ക്'
+              : 'to ${_selectedMember!.fullName}');
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -177,12 +188,19 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.campaign_rounded, color: AppColors.primary, size: 28),
+            const Icon(
+              Icons.campaign_rounded,
+              color: AppColors.primary,
+              size: 28,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 isMl ? 'അറിയിപ്പ് അയക്കണോ?' : 'Send Notification?',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
             ),
           ],
@@ -202,7 +220,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(isMl ? 'അയക്കുക' : 'Send Now'),
@@ -218,7 +238,7 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
     final refId = int.tryParse(_refIdController.text.trim());
 
     final success = await vm.sendNotification(
-      userId: _isBroadcast ? null : _selectedMember?.id,
+      userId: _isBroadcast ? null : _selectedMember?.userId,
       broadcast: _isBroadcast,
       title: _titleController.text.trim(),
       body: _bodyController.text.trim(),
@@ -232,15 +252,24 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           title: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.success,
+                size: 28,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   isMl ? 'വിജയകരം!' : 'Success!',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
@@ -256,7 +285,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 Navigator.pop(ctx);
@@ -271,7 +302,10 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            vm.loadState.message ?? (isMl ? 'അറിയിപ്പ് അയക്കാൻ കഴിഞ്ഞില്ല' : 'Failed to send notification'),
+            vm.loadState.message ??
+                (isMl
+                    ? 'അറിയിപ്പ് അയക്കാൻ കഴിഞ്ഞില്ല'
+                    : 'Failed to send notification'),
           ),
           backgroundColor: AppColors.error,
         ),
@@ -289,7 +323,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isMl ? 'ടെസ്റ്റ് അറിയിപ്പ് ഫോണിലേക്ക് അയച്ചു!' : 'Test notification sent to your device!',
+            isMl
+                ? 'ടെസ്റ്റ് അറിയിപ്പ് ഫോണിലേക്ക് അയച്ചു!'
+                : 'Test notification sent to your device!',
           ),
           backgroundColor: AppColors.success,
         ),
@@ -298,7 +334,8 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            vm.loadState.message ?? (isMl ? 'ടെസ്റ്റ് പരാജയപ്പെട്ടു' : 'Test notification failed'),
+            vm.loadState.message ??
+                (isMl ? 'ടെസ്റ്റ് പരാജയപ്പെട്ടു' : 'Test notification failed'),
           ),
           backgroundColor: AppColors.error,
         ),
@@ -317,7 +354,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
     if (widget.initialMemberId != null &&
         _selectedMember == null &&
         memberVm.members.isNotEmpty) {
-      final found = memberVm.members.where((m) => m.id == widget.initialMemberId).firstOrNull;
+      final found = memberVm.members
+          .where((m) => m.id == widget.initialMemberId)
+          .firstOrNull;
       if (found != null) {
         _isBroadcast = false;
         _selectedMember = found;
@@ -337,8 +376,12 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
         actions: [
           IconButton(
             icon: const Icon(Icons.phonelink_ring_rounded),
-            tooltip: isMl ? 'എന്റെ ഫോണിൽ ടെസ്റ്റ് ചെയ്യുക' : 'Test on My Device',
-            onPressed: isLoading ? null : () => _handleTestMyDevice(context, isMl),
+            tooltip: isMl
+                ? 'എന്റെ ഫോണിൽ ടെസ്റ്റ് ചെയ്യുക'
+                : 'Test on My Device',
+            onPressed: isLoading
+                ? null
+                : () => _handleTestMyDevice(context, isMl),
           ),
         ],
       ),
@@ -369,7 +412,11 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                       color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 30),
+                    child: const Icon(
+                      Icons.campaign_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -419,12 +466,19 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                     onTap: () => setState(() => _isBroadcast = true),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 10,
+                      ),
                       decoration: BoxDecoration(
-                        color: _isBroadcast ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
+                        color: _isBroadcast
+                            ? AppColors.primary.withValues(alpha: 0.1)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _isBroadcast ? AppColors.primary : AppColors.borderLight,
+                          color: _isBroadcast
+                              ? AppColors.primary
+                              : AppColors.borderLight,
                           width: _isBroadcast ? 1.5 : 1,
                         ),
                       ),
@@ -434,15 +488,21 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                           Icon(
                             Icons.groups_rounded,
                             size: 20,
-                            color: _isBroadcast ? AppColors.primary : AppColors.textSecondary,
+                            color: _isBroadcast
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             isMl ? 'എല്ലാവർക്കും' : 'All (Broadcast)',
                             style: GoogleFonts.outfit(
                               fontSize: 13,
-                              fontWeight: _isBroadcast ? FontWeight.bold : FontWeight.w500,
-                              color: _isBroadcast ? AppColors.primary : AppColors.textDark,
+                              fontWeight: _isBroadcast
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: _isBroadcast
+                                  ? AppColors.primary
+                                  : AppColors.textDark,
                             ),
                           ),
                         ],
@@ -456,12 +516,19 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                     onTap: () => setState(() => _isBroadcast = false),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 10,
+                      ),
                       decoration: BoxDecoration(
-                        color: !_isBroadcast ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
+                        color: !_isBroadcast
+                            ? AppColors.primary.withValues(alpha: 0.1)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: !_isBroadcast ? AppColors.primary : AppColors.borderLight,
+                          color: !_isBroadcast
+                              ? AppColors.primary
+                              : AppColors.borderLight,
                           width: !_isBroadcast ? 1.5 : 1,
                         ),
                       ),
@@ -471,15 +538,21 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                           Icon(
                             Icons.person_rounded,
                             size: 20,
-                            color: !_isBroadcast ? AppColors.primary : AppColors.textSecondary,
+                            color: !_isBroadcast
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             isMl ? 'പ്രത്യേക അംഗം' : 'Specific Member',
                             style: GoogleFonts.outfit(
                               fontSize: 13,
-                              fontWeight: !_isBroadcast ? FontWeight.bold : FontWeight.w500,
-                              color: !_isBroadcast ? AppColors.primary : AppColors.textDark,
+                              fontWeight: !_isBroadcast
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: !_isBroadcast
+                                  ? AppColors.primary
+                                  : AppColors.textDark,
                             ),
                           ),
                         ],
@@ -501,16 +574,25 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                   side: const BorderSide(color: AppColors.borderLight),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 4,
+                  ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<MemberModel>(
                       value: _selectedMember,
                       hint: Text(
                         isMl ? 'അംഗത്തെ തിരഞ്ഞെടുക്കുക' : 'Select a Member',
-                        style: GoogleFonts.outfit(fontSize: 13, color: AppColors.textMuted),
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                       isExpanded: true,
-                      icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
+                      icon: const Icon(
+                        Icons.arrow_drop_down_rounded,
+                        color: AppColors.primary,
+                      ),
                       items: memberVm.members.map((member) {
                         return DropdownMenuItem<MemberModel>(
                           value: member,
@@ -571,33 +653,43 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               child: Row(
-                children: List.generate(NotificationViewModel.templates.length, (index) {
-                  final template = NotificationViewModel.templates[index];
-                  final isSelected = _selectedTemplateIndex == index;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(
-                        isMl ? template.labelMl : template.labelEn,
-                        style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          color: isSelected ? Colors.white : AppColors.textDark,
+                children: List.generate(
+                  NotificationViewModel.templates.length,
+                  (index) {
+                    final template = NotificationViewModel.templates[index];
+                    final isSelected = _selectedTemplateIndex == index;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(
+                          isMl ? template.labelMl : template.labelEn,
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textDark,
+                          ),
                         ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: AppColors.primary,
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(
-                          color: isSelected ? AppColors.primary : AppColors.borderLight,
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: BorderSide(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.borderLight,
+                          ),
                         ),
+                        onSelected: (_) =>
+                            _applyTemplate(template, index, isMl),
                       ),
-                      onSelected: (_) => _applyTemplate(template, index, isMl),
-                    ),
-                  );
-                }),
+                    );
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -636,7 +728,10 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                         child: DropdownButton<String>(
                           value: _selectedType,
                           isExpanded: true,
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: AppColors.primary,
+                          ),
                           items: _types.map((type) {
                             return DropdownMenuItem<String>(
                               value: type['value'] as String,
@@ -649,7 +744,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    isMl ? type['labelMl'] as String : type['labelEn'] as String,
+                                    isMl
+                                        ? type['labelMl'] as String
+                                        : type['labelEn'] as String,
                                     style: GoogleFonts.outfit(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -684,26 +781,42 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                       controller: _titleController,
                       maxLength: 100,
                       decoration: InputDecoration(
-                        hintText: isMl ? 'ഉദാ: യോഗ അറിയിപ്പ്' : 'e.g. Important Announcement',
-                        hintStyle: GoogleFonts.outfit(color: AppColors.textMuted, fontSize: 13),
-                        prefixIcon: const Icon(Icons.title_rounded, color: AppColors.primary),
+                        hintText: isMl
+                            ? 'ഉദാ: യോഗ അറിയിപ്പ്'
+                            : 'e.g. Important Announcement',
+                        hintStyle: GoogleFonts.outfit(
+                          color: AppColors.textMuted,
+                          fontSize: 13,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.title_rounded,
+                          color: AppColors.primary,
+                        ),
                         suffixIcon: _titleController.text.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear_rounded, size: 18),
-                                onPressed: () => setState(() => _titleController.clear()),
+                                onPressed: () =>
+                                    setState(() => _titleController.clear()),
                               )
                             : null,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderLight,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderLight,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                         ),
                         filled: true,
                         fillColor: AppColors.bgLight,
@@ -711,7 +824,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                       onChanged: (_) => setState(() {}),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
-                          return isMl ? 'തലക്കെട്ട് നൽകുക' : 'Please enter a title';
+                          return isMl
+                              ? 'തലക്കെട്ട് നൽകുക'
+                              : 'Please enter a title';
                         }
                         return null;
                       },
@@ -736,31 +851,48 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                         hintText: isMl
                             ? 'അംഗങ്ങൾക്കായി സന്ദേശം ഇവിടെ എഴുതുക...'
                             : 'Enter the message content to send...',
-                        hintStyle: GoogleFonts.outfit(color: AppColors.textMuted, fontSize: 13),
+                        hintStyle: GoogleFonts.outfit(
+                          color: AppColors.textMuted,
+                          fontSize: 13,
+                        ),
                         prefixIcon: const Padding(
                           padding: EdgeInsets.only(bottom: 60),
-                          child: Icon(Icons.message_rounded, color: AppColors.primary),
+                          child: Icon(
+                            Icons.message_rounded,
+                            color: AppColors.primary,
+                          ),
                         ),
                         suffixIcon: _bodyController.text.isNotEmpty
                             ? Padding(
                                 padding: const EdgeInsets.only(bottom: 60),
                                 child: IconButton(
-                                  icon: const Icon(Icons.clear_rounded, size: 18),
-                                  onPressed: () => setState(() => _bodyController.clear()),
+                                  icon: const Icon(
+                                    Icons.clear_rounded,
+                                    size: 18,
+                                  ),
+                                  onPressed: () =>
+                                      setState(() => _bodyController.clear()),
                                 ),
                               )
                             : null,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderLight,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.borderLight),
+                          borderSide: const BorderSide(
+                            color: AppColors.borderLight,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                         ),
                         filled: true,
                         fillColor: AppColors.bgLight,
@@ -768,7 +900,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                       onChanged: (_) => setState(() {}),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
-                          return isMl ? 'സന്ദേശം നൽകുക' : 'Please enter message body';
+                          return isMl
+                              ? 'സന്ദേശം നൽകുക'
+                              : 'Please enter message body';
                         }
                         return null;
                       },
@@ -797,19 +931,32 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                           hintText: isMl
                               ? 'ഉദാ: മീറ്റിംഗ് അല്ലെങ്കിൽ ട്രാൻസാക്ഷൻ ഐഡി'
                               : 'e.g. Meeting ID, Transaction ID, or Loan ID',
-                          hintStyle: GoogleFonts.outfit(color: AppColors.textMuted, fontSize: 13),
-                          prefixIcon: const Icon(Icons.tag_rounded, color: AppColors.primary),
+                          hintStyle: GoogleFonts.outfit(
+                            color: AppColors.textMuted,
+                            fontSize: 13,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.tag_rounded,
+                            color: AppColors.primary,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.borderLight),
+                            borderSide: const BorderSide(
+                              color: AppColors.borderLight,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.borderLight),
+                            borderSide: const BorderSide(
+                              color: AppColors.borderLight,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
                           ),
                           filled: true,
                           fillColor: AppColors.bgLight,
@@ -824,7 +971,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
 
             // Live Preview Section
             Text(
-              isMl ? 'അറിയിപ്പ് പ്രിവ്യൂ (Live Preview)' : 'Live Notification Preview',
+              isMl
+                  ? 'അറിയിപ്പ് പ്രിവ്യൂ (Live Preview)'
+                  : 'Live Notification Preview',
               style: GoogleFonts.outfit(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -860,7 +1009,11 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(Icons.account_balance_rounded, color: Colors.white, size: 14),
+                        child: const Icon(
+                          Icons.account_balance_rounded,
+                          color: Colors.white,
+                          size: 14,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -885,7 +1038,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                   Text(
                     _titleController.text.trim().isNotEmpty
                         ? _titleController.text.trim()
-                        : (isMl ? '[തലക്കെട്ട് ഇവിടെ ദൃശ്യമാകും]' : '[Title preview]'),
+                        : (isMl
+                              ? '[തലക്കെട്ട് ഇവിടെ ദൃശ്യമാകും]'
+                              : '[Title preview]'),
                     style: GoogleFonts.outfit(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -898,7 +1053,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                   Text(
                     _bodyController.text.trim().isNotEmpty
                         ? _bodyController.text.trim()
-                        : (isMl ? '[സന്ദേശം ഇവിടെ ദൃശ്യമാകും]' : '[Message preview]'),
+                        : (isMl
+                              ? '[സന്ദേശം ഇവിടെ ദൃശ്യമാകും]'
+                              : '[Message preview]'),
                     style: GoogleFonts.outfit(
                       fontSize: 13,
                       color: _bodyController.text.trim().isNotEmpty
@@ -917,7 +1074,9 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 2,
               ),
               onPressed: isLoading ? null : () => _handleSend(context, isMl),
@@ -925,15 +1084,22 @@ class _SendNotificationBodyState extends State<_SendNotificationBody> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(Icons.send_rounded),
               label: Text(
                 isLoading
                     ? (isMl ? 'അയക്കുന്നു...' : 'Sending...')
                     : (_isBroadcast
-                        ? (isMl ? 'എല്ലാവർക്കും അയക്കുക (Send Broadcast)' : 'Send Broadcast Notification')
-                        : (isMl ? 'അംഗത്തിന് അയക്കുക (Send to Member)' : 'Send to Member')),
+                          ? (isMl
+                                ? 'എല്ലാവർക്കും അയക്കുക (Send Broadcast)'
+                                : 'Send Broadcast Notification')
+                          : (isMl
+                                ? 'അംഗത്തിന് അയക്കുക (Send to Member)'
+                                : 'Send to Member')),
                 style: GoogleFonts.outfit(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,

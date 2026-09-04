@@ -28,6 +28,7 @@ import 'package:ashgledger/viewmodel/language_viewmodel.dart';
 
 import 'package:ashgledger/core/repository/notification_repository.dart';
 import 'package:ashgledger/viewmodel/notification_viewmodel.dart';
+import 'package:ashgledger/viewmodel/member_portal_viewmodel.dart';
 
 final sl = GetIt.instance;
 
@@ -68,4 +69,5 @@ Future<void> setupLocator() async {
   sl.registerFactory<SettingsViewModel>(() => SettingsViewModel(sl<SettingsRepository>()));
   sl.registerFactory<GroupViewModel>(() => GroupViewModel(sl<GroupRepository>()));
   sl.registerFactory<NotificationViewModel>(() => NotificationViewModel(sl<NotificationRepository>()));
+  sl.registerFactory<MemberPortalViewModel>(() => MemberPortalViewModel(sl<ApiClient>()));
 }

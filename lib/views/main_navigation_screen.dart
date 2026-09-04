@@ -14,10 +14,34 @@ import 'members/member_list_screen.dart';
 import 'meetings/meeting_list_screen.dart';
 import 'auth/login_screen.dart';
 
-class MainNavigationScreen extends StatelessWidget {
+class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
+  @override
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
   static final ValueNotifier<int> _currentIndexNotifier = ValueNotifier<int>(0);
+  bool _isLoggingOut = false;
+
+  Future<void> _handleLogout() async {
+    if (_isLoggingOut) return;
+    setState(() => _isLoggingOut = true);
+    try {
+      await context.read<AuthViewModel>().logout();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoggingOut = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +66,9 @@ class MainNavigationScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationsScreen(),
+                            ),
                           );
                         },
                       ),
@@ -56,7 +82,10 @@ class MainNavigationScreen extends StatelessWidget {
                               color: Colors.redAccent,
                               shape: BoxShape.circle,
                             ),
-                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
                             child: Text(
                               count > 99 ? '99+' : '$count',
                               style: const TextStyle(
@@ -82,20 +111,25 @@ class MainNavigationScreen extends StatelessWidget {
                   );
                 },
               ),
-
-              IconButton(
-                icon: const Icon(Icons.logout_rounded),
-                tooltip: 'Logout',
-                onPressed: () async {
-                  await context.read<AuthViewModel>().logout();
-                  if (context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
-                    );
-                  }
-                },
-              ),
+              _isLoggingOut
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14.0),
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.logout_rounded),
+                      tooltip: 'Logout',
+                      onPressed: _handleLogout,
+                    ),
             ],
           ),
           body: IndexedStack(

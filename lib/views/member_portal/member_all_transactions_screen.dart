@@ -1,3 +1,4 @@
+import '../../core/di/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
@@ -13,6 +14,46 @@ class MemberAllTransactionsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    MemberPortalViewModel? vm;
+    try {
+      vm = Provider.of<MemberPortalViewModel>(context, listen: false);
+    } catch (_) {
+      vm = null;
+    }
+
+    if (vm == null) {
+      return ChangeNotifierProvider(
+        create: (_) => sl<MemberPortalViewModel>()..fetchMyTransactionsPage(0),
+        child: const _MemberAllTransactionsView(),
+      );
+    }
+
+    return const _MemberAllTransactionsView();
+  }
+}
+
+class _MemberAllTransactionsView extends StatefulWidget {
+  const _MemberAllTransactionsView();
+
+  @override
+  State<_MemberAllTransactionsView> createState() => _MemberAllTransactionsViewState();
+}
+
+class _MemberAllTransactionsViewState extends State<_MemberAllTransactionsView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final vm = context.read<MemberPortalViewModel>();
+      if (vm.myTransactions.isEmpty && !vm.loadState.isLoading) {
+        vm.fetchMyTransactionsPage(0);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isMl = l10n.locale.languageCode == 'ml';
 
@@ -25,8 +66,10 @@ class MemberAllTransactionsScreen extends StatelessWidget {
       ),
       body: Consumer<MemberPortalViewModel>(
         builder: (context, vm, _) {
-          if (vm.loadState.isLoading) return const MemberListShimmerLoading();
-          if (vm.loadState.hasError) {
+          if (vm.loadState.isLoading && vm.myTransactions.isEmpty) {
+            return const MemberListShimmerLoading();
+          }
+          if (vm.loadState.hasError && vm.myTransactions.isEmpty) {
             return CommonErrorWidget(
               message: vm.loadState.message ?? 'Failed to load transactions',
               onRetry: () => vm.fetchMyTransactionsPage(vm.currentPage),

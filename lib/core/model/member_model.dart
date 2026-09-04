@@ -2,6 +2,7 @@ import 'member_account_model.dart';
 
 class MemberModel {
   final int id;
+  final int userId;
   final String memberNumber;
   final String fullName;
   final String? phone;
@@ -13,7 +14,8 @@ class MemberModel {
   double get loanBalance => getAccountBalance('LOAN');
   double get specialLoanBalance => getAccountBalance('SPECIAL_LOAN');
   double get depositBalance => getAccountBalance('DEPOSIT');
-  double get monthlyContributionBalance => getAccountBalance('MONTHLY_CONTRIBUTION');
+  double get monthlyContributionBalance =>
+      getAccountBalance('MONTHLY_CONTRIBUTION');
   double get fineBalance => getAccountBalance('FINE');
   double get financialAidBalance => getAccountBalance('FINANCIAL_AID');
   double get interestBalance => getAccountBalance('INTEREST');
@@ -28,6 +30,7 @@ class MemberModel {
   }
 
   MemberModel({
+    required this.userId,
     required this.id,
     required this.memberNumber,
     required this.fullName,
@@ -43,6 +46,7 @@ class MemberModel {
         .map((x) => MemberAccountModel.fromJson(x as Map<String, dynamic>))
         .toList();
     return MemberModel(
+      userId: json['userId'] ?? 0,
       id: json['id'] ?? 0,
       memberNumber: json['memberNumber'] ?? '',
       fullName: json['fullName'] ?? '',

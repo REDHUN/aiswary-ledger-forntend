@@ -14,24 +14,23 @@ class NotificationRouter {
     switch (notifType) {
       case NotificationType.MEETING:
         if (refId != null) {
-          Navigator.pushNamed(context, '/meeting-details', arguments: {'meetingId': refId});
+          Navigator.pushNamed(
+            context,
+            '/meeting-details',
+            arguments: {'meetingId': refId},
+          );
         } else {
           Navigator.pushNamed(context, '/meetings');
         }
         break;
+      case NotificationType.MEETING_REPORT:
+        Navigator.pushNamed(context, '/register-book');
+        break;
       case NotificationType.PAYMENT:
-        if (refId != null) {
-          Navigator.pushNamed(context, '/transaction-details', arguments: {'transactionId': refId});
-        } else {
-          Navigator.pushNamed(context, '/transactions');
-        }
+        Navigator.pushNamed(context, '/transactions');
         break;
       case NotificationType.LOAN:
-        if (refId != null) {
-          Navigator.pushNamed(context, '/loan-details', arguments: {'loanId': refId});
-        } else {
-          Navigator.pushNamed(context, '/loans');
-        }
+        Navigator.pushNamed(context, '/loans');
         break;
       case NotificationType.FINE:
         Navigator.pushNamed(context, '/fines');
@@ -39,7 +38,7 @@ class NotificationRouter {
       case NotificationType.ANNOUNCEMENT:
       case NotificationType.GENERAL:
       case NotificationType.TEST:
-        Navigator.pushNamed(context, '/notifications');
+        //  Navigator.pushNamed(context, '/notifications');
         break;
     }
   }

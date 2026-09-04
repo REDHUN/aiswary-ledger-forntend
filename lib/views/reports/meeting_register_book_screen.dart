@@ -22,22 +22,34 @@ enum RegisterFilterMode { all, varavu, expense }
 
 class MeetingRegisterBookScreen extends StatelessWidget {
   final bool isReadOnly;
+  final bool showAppBar;
 
-  const MeetingRegisterBookScreen({super.key, this.isReadOnly = false});
+  const MeetingRegisterBookScreen({
+    super.key,
+    this.isReadOnly = false,
+    this.showAppBar = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => ReportsViewModel(sl<ReportsRepository>())..fetchMeetings(),
-      child: _MeetingRegisterBookBody(isReadOnly: isReadOnly),
+      child: _MeetingRegisterBookBody(
+        isReadOnly: isReadOnly,
+        showAppBar: showAppBar,
+      ),
     );
   }
 }
 
 class _MeetingRegisterBookBody extends StatefulWidget {
   final bool isReadOnly;
+  final bool showAppBar;
 
-  const _MeetingRegisterBookBody({this.isReadOnly = false});
+  const _MeetingRegisterBookBody({
+    this.isReadOnly = false,
+    this.showAppBar = true,
+  });
 
   @override
   State<_MeetingRegisterBookBody> createState() =>
@@ -124,14 +136,14 @@ class _MeetingRegisterBookBodyState extends State<_MeetingRegisterBookBody> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: widget.isReadOnly
-          ? null
-          : AppBar(
+      appBar: widget.showAppBar
+          ? AppBar(
               title: Text(
                 isMl ? 'മീറ്റിംഗ് രജിസ്റ്റർ ബുക്ക്' : 'Meeting Register Book',
                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
               ),
-            ),
+            )
+          : null,
       body: Consumer<ReportsViewModel>(
         builder: (context, vm, _) {
           if (vm.loadState.isLoading && vm.meetingReports.isEmpty) {

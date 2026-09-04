@@ -1,5 +1,6 @@
 enum NotificationType {
   MEETING,
+  MEETING_REPORT,
   PAYMENT,
   LOAN,
   FINE,
@@ -11,6 +12,12 @@ enum NotificationType {
     switch (type?.toUpperCase()) {
       case 'MEETING':
         return NotificationType.MEETING;
+      case 'MEETING_REPORT':
+      case 'MEETING REPORT':
+      case 'MEETINGREPORT':
+      case 'REGISTER_BOOK':
+      case 'REGISTERBOOK':
+        return NotificationType.MEETING_REPORT;
       case 'PAYMENT':
         return NotificationType.PAYMENT;
       case 'LOAN':
@@ -67,7 +74,9 @@ class NotificationItem {
       userId: json['userId'] as int?,
       title: json['title']?.toString() ?? '',
       body: json['body']?.toString() ?? '',
-      notificationType: NotificationType.fromString(json['notificationType']?.toString()),
+      notificationType: NotificationType.fromString(
+        json['notificationType']?.toString(),
+      ),
       referenceId: json['referenceId'] as int?,
       data: parsedData,
       isRead: json['isRead'] as bool? ?? false,

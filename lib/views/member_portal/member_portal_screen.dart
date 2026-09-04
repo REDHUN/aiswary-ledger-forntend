@@ -44,6 +44,7 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
   String _selectedReportMonth = '';
   int _selectedSubReportIndex =
       0; // 0: All, 1: Standard Loans, 2: Special Loans, 3: Deposits, 4: Contributions, 5: Fines
+  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -55,6 +56,24 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogout(AuthViewModel authVm) async {
+    if (_isLoggingOut) return;
+    setState(() => _isLoggingOut = true);
+    try {
+      await authVm.logout();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoggingOut = false);
+      }
+    }
   }
 
   @override
@@ -78,12 +97,17 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
                 alignment: Alignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    icon: const Icon(
+                      Icons.notifications_outlined,
+                      color: Colors.white,
+                    ),
                     tooltip: isMl ? 'അറിയിപ്പുകൾ' : 'Notifications',
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const NotificationsScreen(),
+                        ),
                       );
                     },
                   ),
@@ -97,7 +121,10 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
                           color: Colors.redAccent,
                           shape: BoxShape.circle,
                         ),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
                         child: Text(
                           count > 99 ? '99+' : '$count',
                           style: const TextStyle(
@@ -118,19 +145,25 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
             onPressed: () =>
                 context.read<MemberPortalViewModel>().fetchMyData(),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.white),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await authVm.logout();
-              if (context.mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => LoginScreen()),
-                );
-              }
-            },
-          ),
+          _isLoggingOut
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                  tooltip: 'Logout',
+                  onPressed: () => _handleLogout(authVm),
+                ),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -171,7 +204,7 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
             children: [
               _buildLedgerTab(context, vm, member, isMl),
               _buildReportsTab(context, vm, member, isMl),
-              const MeetingRegisterBookScreen(isReadOnly: true),
+              const MeetingRegisterBookScreen(isReadOnly: true, showAppBar: false),
             ],
           );
         },
@@ -833,9 +866,7 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.deepOrange.withValues(alpha: 0.3),
-            ),
+            border: Border.all(color: Colors.deepOrange.withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
                 color: Colors.deepOrange.withValues(alpha: 0.05),
@@ -1018,9 +1049,7 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isMl
-                          ? 'നിക്ഷേപങ്ങൾ (ആകെ)'
-                          : 'Deposits Added in Month',
+                      isMl ? 'നിക്ഷേപങ്ങൾ (ആകെ)' : 'Deposits Added in Month',
                       style: GoogleFonts.outfit(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
@@ -1191,7 +1220,9 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.accountContribution.withValues(alpha: 0.1),
+                      color: AppColors.accountContribution.withValues(
+                        alpha: 0.1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -1205,9 +1236,7 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isMl
-                            ? 'മാസ വരിസംഖ്യ (ആകെ)'
-                            : 'Monthly Contributions',
+                        isMl ? 'മാസ വരിസംഖ്യ (ആകെ)' : 'Monthly Contributions',
                         style: GoogleFonts.outfit(
                           fontSize: 13,
                           color: AppColors.textSecondary,
@@ -1230,9 +1259,7 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
         ),
         const SizedBox(height: 20),
         Text(
-          isMl
-              ? 'വരിസംഖ്യ അടവ് വിവരങ്ങൾ'
-              : 'Contributions Breakdown',
+          isMl ? 'വരിസംഖ്യ അടവ് വിവരങ്ങൾ' : 'Contributions Breakdown',
           style: GoogleFonts.outfit(
             fontSize: 17,
             fontWeight: FontWeight.bold,
@@ -1303,10 +1330,7 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
   }
 
   // 6. Fines Sub-Report
-  Widget _buildFinesReportSection(
-    MemberPersonalReportModel report,
-    bool isMl,
-  ) {
+  Widget _buildFinesReportSection(MemberPersonalReportModel report, bool isMl) {
     final entries = report.meetingPayments
         .where((e) => e.finePayment > 0)
         .toList();
