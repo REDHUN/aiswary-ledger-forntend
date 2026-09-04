@@ -44,7 +44,6 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
   String _selectedReportMonth = '';
   int _selectedSubReportIndex =
       0; // 0: All, 1: Standard Loans, 2: Special Loans, 3: Deposits, 4: Contributions, 5: Fines
-  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -56,24 +55,6 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleLogout(AuthViewModel authVm) async {
-    if (_isLoggingOut) return;
-    setState(() => _isLoggingOut = true);
-    try {
-      await authVm.logout();
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _isLoggingOut = false);
-      }
-    }
   }
 
   @override
@@ -145,25 +126,19 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
             onPressed: () =>
                 context.read<MemberPortalViewModel>().fetchMyData(),
           ),
-          _isLoggingOut
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                  tooltip: 'Logout',
-                  onPressed: () => _handleLogout(authVm),
-                ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await authVm.logout();
+              if (context.mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => LoginScreen()),
+                );
+              }
+            },
+          ),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -204,7 +179,10 @@ class _MemberPortalBodyState extends State<_MemberPortalBody>
             children: [
               _buildLedgerTab(context, vm, member, isMl),
               _buildReportsTab(context, vm, member, isMl),
-              const MeetingRegisterBookScreen(isReadOnly: true, showAppBar: false),
+              const MeetingRegisterBookScreen(
+                isReadOnly: true,
+                showAppBar: false,
+              ),
             ],
           );
         },
