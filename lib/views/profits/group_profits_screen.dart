@@ -1,38 +1,223 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/common/app_shimmer.dart';
-import '../../core/common/common_error_widget.dart';
+import '../../core/common/app_formatters.dart';
 import '../../core/localization/app_localizations.dart';
+import '../../core/di/service_locator.dart';
+import '../../core/model/group_profit_model.dart';
 import '../../viewmodel/group_profit_viewmodel.dart';
 import 'add_group_profit_dialog.dart';
 
-class GroupProfitsScreen extends StatefulWidget {
+class GroupProfitsScreen extends StatelessWidget {
   const GroupProfitsScreen({super.key});
 
   @override
-  State<GroupProfitsScreen> createState() => _GroupProfitsScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => sl<GroupProfitViewModel>()..fetchGroupProfits(),
+      child: const _GroupProfitsBody(),
+    );
+  }
 }
 
-class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<GroupProfitViewModel>().fetchGroupProfits();
-    });
-  }
+class _GroupProfitsBody extends StatelessWidget {
+  const _GroupProfitsBody();
 
   void _openAddProfitDialog(BuildContext context) {
+    final profitVm = context.read<GroupProfitViewModel>();
     showDialog(
       context: context,
-      builder: (_) => const AddGroupProfitDialog(),
-    ).then((val) {
-      if (val == true && context.mounted) {
+      builder: (_) => ChangeNotifierProvider.value(
+        value: profitVm,
+        child: const AddGroupProfitDialog(),
+      ),
+    ).then((_) {
+      if (context.mounted) {
         context.read<GroupProfitViewModel>().fetchGroupProfits();
       }
     });
+  }
+
+  void _openEditProfitDialog(BuildContext context, GroupProfitModel profit) {
+    final profitVm = context.read<GroupProfitViewModel>();
+    showDialog(
+      context: context,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: profitVm,
+        child: AddGroupProfitDialog(profitToEdit: profit),
+      ),
+    ).then((_) {
+      if (context.mounted) {
+        context.read<GroupProfitViewModel>().fetchGroupProfits();
+      }
+    });
+  }
+
+  void _confirmDeleteProfit(BuildContext context, GroupProfitModel item, bool isMl) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: Colors.redAccent,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                isMl ? 'ലാഭം നീക്കം ചെയ്യണോ?' : 'Delete Profit?',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.bgLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderLight),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.title,
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '+₹${item.amount.toStringAsFixed(2)}',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: const Color(0xFF047857),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${isMl ? 'തീയതി: ' : 'Date: '}${AppFormatters.formatDate(item.profitDate)}',
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (item.description != null && item.description!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      item.description!,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              isMl
+                  ? 'ഈ ലാഭം നീക്കം ചെയ്യുമ്പോൾ തുക മിച്ച ഫണ്ടിൽ നിന്ന് സ്വയം കുറയ്ക്കും.'
+                  : 'Deleting this will deduct the amount from the surplus fund.',
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              isMl ? 'റദ്ദാക്കുക' : 'Cancel',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.delete_outline_rounded, size: 18),
+            label: Text(
+              isMl ? 'നീക്കം ചെയ്യുക' : 'Delete',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      final success = await context.read<GroupProfitViewModel>().deleteGroupProfit(item.id);
+      if (context.mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(isMl ? 'ലാഭം നീക്കം ചെയ്തു' : 'Profit deleted successfully'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(isMl ? 'ലാഭം നീക്കം ചെയ്യാൻ കഴിഞ്ഞില്ല' : 'Failed to delete profit'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -41,16 +226,19 @@ class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
     final isMl = l10n.locale.languageCode == 'ml';
 
     return Scaffold(
+      backgroundColor: AppColors.bgLight,
       appBar: AppBar(
         title: Text(
           isMl ? 'ഗ്രൂപ്പ് ലാഭങ്ങൾ' : 'Group Profits',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
+        backgroundColor: const Color(0xFF047857),
+        foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline_rounded),
-            onPressed: () => _openAddProfitDialog(context),
-            tooltip: isMl ? 'ലാഭം രേഖപ്പെടുത്തുക' : 'Record Profit',
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => context.read<GroupProfitViewModel>().fetchGroupProfits(),
           ),
         ],
       ),
@@ -60,7 +248,7 @@ class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
         onPressed: () => _openAddProfitDialog(context),
         icon: const Icon(Icons.add_rounded),
         label: Text(
-          isMl ? 'ലാഭം ലഭിച്ചു' : 'Add Profit',
+          isMl ? 'ലാഭം ചേർക്കുക' : 'Record Profit',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
       ),
@@ -70,22 +258,18 @@ class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
             return const MemberListShimmerLoading();
           }
 
-          if (vm.loadState.hasError && vm.groupProfits.isEmpty) {
-            return CommonErrorWidget(
-              message: vm.loadState.message ?? (isMl ? 'ഡാറ്റ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല' : 'Failed to load group profits'),
-              onRetry: () => vm.fetchGroupProfits(),
-            );
-          }
-
           final profits = vm.groupProfits;
-          final totalProfitAmount = profits.fold<double>(0, (sum, item) => sum + item.amount);
+          final totalProfitAmount = profits.fold<double>(
+            0.0,
+            (sum, item) => sum + item.amount,
+          );
 
           return RefreshIndicator(
             onRefresh: () => vm.fetchGroupProfits(),
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Total Summary Card
+                // Summary Card
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -94,7 +278,7 @@ class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF047857).withValues(alpha: 0.25),
@@ -224,7 +408,7 @@ class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      isMl ? 'തീയതി: ${item.profitDate}' : 'Date: ${item.profitDate}',
+                                      '${isMl ? 'തീയതി: ' : 'Date: '}${AppFormatters.formatDate(item.profitDate)}',
                                       style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
                                     ),
                                     if (item.description != null && item.description!.isNotEmpty) ...[
@@ -244,6 +428,99 @@ class _GroupProfitsScreenState extends State<GroupProfitsScreen> {
                                   fontSize: 16,
                                   color: const Color(0xFF047857),
                                 ),
+                              ),
+                              const SizedBox(width: 4),
+                              PopupMenuButton<String>(
+                                tooltip: isMl ? 'കൂടുതൽ ഓപ്ഷനുകൾ' : 'More options',
+                                icon: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.more_vert_rounded,
+                                    color: AppColors.textSecondary,
+                                    size: 18,
+                                  ),
+                                ),
+                                elevation: 6,
+                                shadowColor: Colors.black26,
+                                color: Colors.white,
+                                surfaceTintColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: const BorderSide(color: AppColors.borderLight),
+                                ),
+                                offset: const Offset(0, 42),
+                                onSelected: (val) {
+                                  if (val == 'edit') {
+                                    _openEditProfitDialog(context, item);
+                                  } else if (val == 'delete') {
+                                    _confirmDeleteProfit(context, item, isMl);
+                                  }
+                                },
+                                itemBuilder: (ctx) => [
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    height: 44,
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFECFDF5),
+                                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                                          ),
+                                          child: const Icon(
+                                            Icons.edit_outlined,
+                                            size: 16,
+                                            color: Color(0xFF047857),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          isMl ? 'എഡിറ്റ് ചെയ്യുക' : 'Edit',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textDark,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuDivider(height: 1),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    height: 44,
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade50,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Icon(
+                                            Icons.delete_outline_rounded,
+                                            size: 16,
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          isMl ? 'നീക്കം ചെയ്യുക' : 'Delete',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

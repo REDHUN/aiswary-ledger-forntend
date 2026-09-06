@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import '../core/state/load_state.dart';
 import '../core/repository/group_profit_repository.dart';
 import '../core/model/group_profit_model.dart';
@@ -45,8 +45,54 @@ class GroupProfitViewModel extends ChangeNotifier {
         description: description,
         meetingId: meetingId,
       );
-      actionState.success("Profit recorded successfully!");
-      fetchGroupProfits();
+      actionState.success('Profit recorded successfully!');
+      await fetchGroupProfits();
+      return true;
+    } catch (e) {
+      actionState.error(e.toString());
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateGroupProfit({
+    required int id,
+    required String title,
+    required double amount,
+    required String profitDate,
+    String? description,
+    int? meetingId,
+  }) async {
+    actionState.loading();
+    notifyListeners();
+
+    try {
+      await _repository.updateGroupProfit(
+        id: id,
+        title: title,
+        amount: amount,
+        profitDate: profitDate,
+        description: description,
+        meetingId: meetingId,
+      );
+      actionState.success('Profit updated successfully!');
+      await fetchGroupProfits();
+      return true;
+    } catch (e) {
+      actionState.error(e.toString());
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteGroupProfit(int id) async {
+    actionState.loading();
+    notifyListeners();
+
+    try {
+      await _repository.deleteGroupProfit(id);
+      actionState.success('Profit deleted successfully!');
+      await fetchGroupProfits();
       return true;
     } catch (e) {
       actionState.error(e.toString());

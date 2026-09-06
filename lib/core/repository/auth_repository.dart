@@ -23,6 +23,7 @@ class AuthRepository {
 
     await _storageService.saveSession(
       token: user.accessToken,
+      refreshToken: user.refreshToken,
       username: user.username,
       role: user.role,
       userId: user.userId,
@@ -50,6 +51,8 @@ class AuthRepository {
   }
 
   bool isLoggedIn() => _storageService.hasSession();
+  String? getToken() => _storageService.getToken();
+  String? getRefreshToken() => _storageService.getRefreshToken();
   String? getUsername() => _storageService.getUsername();
   String? getRole() => _storageService.getRole();
   bool isAdmin() => _storageService.isAdmin();

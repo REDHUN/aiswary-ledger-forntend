@@ -1,16 +1,22 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/localization/app_localizations.dart';
+import '../../core/model/group_profit_model.dart';
 import '../../viewmodel/group_profit_viewmodel.dart';
-import '../../viewmodel/reports_viewmodel.dart';
 import '../../viewmodel/dashboard_viewmodel.dart';
 
 class AddGroupProfitDialog extends StatefulWidget {
   final int? preselectedMeetingId;
-  const AddGroupProfitDialog({super.key, this.preselectedMeetingId});
+  final GroupProfitModel? profitToEdit;
+
+  const AddGroupProfitDialog({
+    super.key,
+    this.preselectedMeetingId,
+    this.profitToEdit,
+  });
 
   @override
   State<AddGroupProfitDialog> createState() => _AddGroupProfitDialogState();
@@ -21,8 +27,24 @@ class _AddGroupProfitDialogState extends State<AddGroupProfitDialog> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   final _notesController = TextEditingController();
-  final DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateTime.now();
   bool _isSubmitting = false;
+
+  bool get _isEditing => widget.profitToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _titleController.text = widget.profitToEdit!.title;
+      _amountController.text = widget.profitToEdit!.amount.toString();
+      _notesController.text = widget.profitToEdit!.description ?? '';
+      final parsed = DateTime.tryParse(widget.profitToEdit!.profitDate);
+      if (parsed != null) {
+        _selectedDate = parsed;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -40,32 +62,53 @@ class _AddGroupProfitDialogState extends State<AddGroupProfitDialog> {
     final title = _titleController.text.trim();
     final amount = double.parse(_amountController.text.trim());
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final notes = _notesController.text.trim();
+    final desc = _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null;
 
     final vm = context.read<GroupProfitViewModel>();
-    final success = await vm.recordGroupProfit(
-      title: title,
-      amount: amount,
-      profitDate: dateStr,
-      description: notes.isNotEmpty ? notes : null,
-      meetingId: widget.preselectedMeetingId,
-    );
+    final bool success;
+
+    if (_isEditing) {
+      success = await vm.updateGroupProfit(
+        id: widget.profitToEdit!.id,
+        title: title,
+        amount: amount,
+        profitDate: dateStr,
+        description: desc,
+        meetingId: widget.profitToEdit!.meetingId ?? widget.preselectedMeetingId,
+      );
+    } else {
+      success = await vm.recordGroupProfit(
+        title: title,
+        amount: amount,
+        profitDate: dateStr,
+        description: desc,
+        meetingId: widget.preselectedMeetingId,
+      );
+    }
+
+    setState(() => _isSubmitting = false);
 
     if (mounted) {
-      setState(() => _isSubmitting = false);
       if (success) {
-        context.read<ReportsViewModel>().fetchAllReports();
-        context.read<DashboardViewModel>().fetchDashboardSummary();
+        final l10n = AppLocalizations.of(context);
+        final isMl = l10n.locale.languageCode == 'ml';
+        try {
+          context.read<DashboardViewModel>().fetchDashboardSummary();
+        } catch (_) {}
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ലാഭം വിജയകരമായി രേഖപ്പെടുത്തി!'),
+          SnackBar(
+            content: Text(
+              _isEditing
+                  ? (isMl ? 'ലാഭം വിജയകരമായി പുതുക്കി!' : 'Profit updated successfully!')
+                  : (isMl ? 'ലാഭം വിജയകരമായി രേഖപ്പെടുത്തി!' : 'Profit recorded successfully!'),
+            ),
             backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(context, true);
       } else {
-        final err = vm.actionState.message ?? 'Failed to record profit';
+        final err = vm.actionState.message ?? (_isEditing ? 'Failed to update profit' : 'Failed to record profit');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(err), backgroundColor: AppColors.error),
         );
@@ -103,7 +146,9 @@ class _AddGroupProfitDialogState extends State<AddGroupProfitDialog> {
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        isMl ? 'ലാഭം രേഖപ്പെടുത്തുക' : 'Record Group Profit',
+                        _isEditing
+                            ? (isMl ? 'ലാഭം മാറ്റുക' : 'Edit Group Profit')
+                            : (isMl ? 'ലാഭം രേഖപ്പെടുത്തുക' : 'Record Group Profit'),
                         style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
                       ),
                     ),
@@ -198,7 +243,9 @@ class _AddGroupProfitDialogState extends State<AddGroupProfitDialog> {
                         ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                         : const Icon(Icons.check_circle_rounded, size: 20),
                     label: Text(
-                      isMl ? 'ലാഭം രേഖപ്പെടുത്തുക' : 'Save Group Profit',
+                      _isEditing
+                          ? (isMl ? 'മാറ്റങ്ങൾ സേവ് ചെയ്യുക' : 'Update Group Profit')
+                          : (isMl ? 'ലാഭം രേഖപ്പെടുത്തുക' : 'Save Group Profit'),
                       style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                   ),

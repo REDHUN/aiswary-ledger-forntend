@@ -29,9 +29,21 @@ class ExpenseRepository {
     return ExpenseTypeModel.fromJson(response['data']);
   }
 
+  Future<ExpenseTypeModel> updateExpenseType(int id, String name, {String? description}) async {
+    final response = await _apiClient.request(
+      path: ApiEndpoints.expenseTypeDetails(id),
+      method: RequestType.put,
+      body: {
+        'name': name,
+        'description': description,
+      },
+    );
+    return ExpenseTypeModel.fromJson(response['data']);
+  }
+
   Future<void> deleteExpenseType(int id) async {
     await _apiClient.request(
-      path: '${ApiEndpoints.expenseTypes}/$id',
+      path: ApiEndpoints.expenseTypeDetails(id),
       method: RequestType.delete,
     );
   }
@@ -66,5 +78,36 @@ class ExpenseRepository {
       body: body,
     );
     return GroupExpenseModel.fromJson(response['data']);
+  }
+
+  Future<GroupExpenseModel> updateGroupExpense({
+    required int id,
+    required int expenseTypeId,
+    required double amount,
+    String? expenseDate,
+    String? description,
+    int? meetingId,
+  }) async {
+    final Map<String, dynamic> body = {
+      'expenseTypeId': expenseTypeId,
+      'amount': amount,
+    };
+    if (expenseDate != null) body['expenseDate'] = expenseDate;
+    if (description != null) body['description'] = description;
+    if (meetingId != null) body['meetingId'] = meetingId;
+
+    final response = await _apiClient.request(
+      path: ApiEndpoints.groupExpenseDetails(id),
+      method: RequestType.put,
+      body: body,
+    );
+    return GroupExpenseModel.fromJson(response['data']);
+  }
+
+  Future<void> deleteGroupExpense(int id) async {
+    await _apiClient.request(
+      path: ApiEndpoints.groupExpenseDetails(id),
+      method: RequestType.delete,
+    );
   }
 }

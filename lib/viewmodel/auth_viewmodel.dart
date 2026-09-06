@@ -13,6 +13,8 @@ class AuthViewModel extends ChangeNotifier {
   AuthViewModel(this._authRepository);
 
   bool get isLoggedIn => _authRepository.isLoggedIn();
+  String? get token => _authRepository.getToken();
+  String? get refreshToken => _authRepository.getRefreshToken();
   String? get username => _authRepository.getUsername();
   String? get role => _authRepository.getRole();
   bool get isAdmin => _authRepository.isAdmin();

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import '../core/model/expense_type_model.dart';
 import '../core/model/group_expense_model.dart';
 import '../core/repository/expense_repository.dart';
@@ -31,6 +31,16 @@ class ExpenseViewModel extends ChangeNotifier {
   Future<bool> createExpenseType(String name, {String? description}) async {
     try {
       await _repository.createExpenseType(name, description: description);
+      await fetchExpenseTypes();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateExpenseType(int id, String name, {String? description}) async {
+    try {
+      await _repository.updateExpenseType(id, name, description: description);
       await fetchExpenseTypes();
       return true;
     } catch (e) {
@@ -75,6 +85,40 @@ class ExpenseViewModel extends ChangeNotifier {
         description: description,
         meetingId: meetingId,
       );
+      await fetchGroupExpenses();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateGroupExpense({
+    required int id,
+    required int expenseTypeId,
+    required double amount,
+    String? expenseDate,
+    String? description,
+    int? meetingId,
+  }) async {
+    try {
+      await _repository.updateGroupExpense(
+        id: id,
+        expenseTypeId: expenseTypeId,
+        amount: amount,
+        expenseDate: expenseDate,
+        description: description,
+        meetingId: meetingId,
+      );
+      await fetchGroupExpenses();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteGroupExpense(int id) async {
+    try {
+      await _repository.deleteGroupExpense(id);
       await fetchGroupExpenses();
       return true;
     } catch (e) {

@@ -172,7 +172,7 @@ class _GroupLoansBody extends StatelessWidget {
                       children: [
                         const SizedBox(height: 4),
                         Text(
-                          '₹${item.totalAmount.toStringAsFixed(2)} (${item.memberCount} ${isMl ? "അംഗങ്ങൾ" : "members"}) → ₹${item.perMemberAmount.toStringAsFixed(2)} ${isMl ? "ഓരോരുത്തർക്കും" : "each"}',
+                          '₹${item.totalAmount % 1 == 0 ? item.totalAmount.toInt() : item.totalAmount.toStringAsFixed(2)} (${item.memberCount} ${isMl ? "അംഗങ്ങൾ" : "members"}) → ₹${item.perMemberAmount % 1 == 0 ? item.perMemberAmount.toInt() : item.perMemberAmount.toInt()} ${isMl ? "ഓരോരുത്തർക്കും" : "each"}',
                           style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 13),
                         ),
                         if (item.notes != null && item.notes!.isNotEmpty)

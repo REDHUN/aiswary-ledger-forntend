@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/common/app_shimmer.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/di/service_locator.dart';
+import '../../core/model/expense_type_model.dart';
 import '../../viewmodel/expense_viewmodel.dart';
 
 class ExpenseTypesScreen extends StatelessWidget {
@@ -22,16 +23,24 @@ class ExpenseTypesScreen extends StatelessWidget {
 class _ExpenseTypesBody extends StatelessWidget {
   const _ExpenseTypesBody();
 
-  void _showAddExpenseTypeDialog(BuildContext context, ExpenseViewModel vm, bool isMl) {
-    final nameCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
+  void _showAddOrEditExpenseTypeDialog(
+    BuildContext context,
+    ExpenseViewModel vm,
+    bool isMl, {
+    ExpenseTypeModel? itemToEdit,
+  }) {
+    final isEditing = itemToEdit != null;
+    final nameCtrl = TextEditingController(text: itemToEdit?.name ?? '');
+    final descCtrl = TextEditingController(text: itemToEdit?.description ?? '');
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text(
-          isMl ? 'ചെലവ് തരം ചേർക്കുക' : 'Add Expense Type',
+          isEditing
+              ? (isMl ? 'ചെലവ് തരം മാറ്റുക' : 'Edit Expense Type')
+              : (isMl ? 'ചെലവ് തരം ചേർക്കുക' : 'Add Expense Type'),
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
         content: Column(
@@ -65,11 +74,19 @@ class _ExpenseTypesBody extends StatelessWidget {
               final name = nameCtrl.text.trim();
               final desc = descCtrl.text.trim();
               if (name.isNotEmpty) {
-                await vm.createExpenseType(name, description: desc.isNotEmpty ? desc : null);
+                if (isEditing) {
+                  await vm.updateExpenseType(itemToEdit.id, name, description: desc.isNotEmpty ? desc : null);
+                } else {
+                  await vm.createExpenseType(name, description: desc.isNotEmpty ? desc : null);
+                }
                 if (ctx.mounted) Navigator.pop(ctx);
               }
             },
-            child: Text(isMl ? 'സേവ് ചെയ്യുക' : 'Save'),
+            child: Text(
+              isEditing
+                  ? (isMl ? 'അപ്‌ഡേറ്റ് ചെയ്യുക' : 'Update')
+                  : (isMl ? 'സേവ് ചെയ്യുക' : 'Save'),
+            ),
           ),
         ],
       ),
@@ -85,19 +102,16 @@ class _ExpenseTypesBody extends StatelessWidget {
       backgroundColor: AppColors.bgLight,
       appBar: AppBar(
         title: Text(
-          isMl ? 'ചെലവ് തരങ്ങൾ (Expense Types)' : 'Expense Types',
+          isMl ? 'ചെലവ് തരങ്ങൾ' : 'Expense Types',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.deepOrange,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          Consumer<ExpenseViewModel>(
-            builder: (context, vm, _) => IconButton(
-              icon: const Icon(Icons.add_circle_outline_rounded),
-              tooltip: isMl ? 'ചെലവ് തരം ചേർക്കുക' : 'Add Expense Type',
-              onPressed: () => _showAddExpenseTypeDialog(context, vm, isMl),
-            ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => context.read<ExpenseViewModel>().fetchExpenseTypes(),
           ),
         ],
       ),
@@ -105,7 +119,7 @@ class _ExpenseTypesBody extends StatelessWidget {
         builder: (context, vm, _) => FloatingActionButton.extended(
           backgroundColor: Colors.deepOrange,
           foregroundColor: Colors.white,
-          onPressed: () => _showAddExpenseTypeDialog(context, vm, isMl),
+          onPressed: () => _showAddOrEditExpenseTypeDialog(context, vm, isMl),
           icon: const Icon(Icons.add_rounded),
           label: Text(
             isMl ? 'ചെലവ് തരം ചേർക്കുക' : 'Add Expense Type',
@@ -166,30 +180,40 @@ class _ExpenseTypesBody extends StatelessWidget {
                   subtitle: item.description != null && item.description!.isNotEmpty
                       ? Text(item.description!, style: GoogleFonts.outfit(fontSize: 13, color: AppColors.textSecondary))
                       : null,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                    tooltip: isMl ? 'നീക്കം ചെയ്യുക' : 'Delete',
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          title: Text(isMl ? 'തീർച്ചയാണോ?' : 'Confirm Delete'),
-                          content: Text(isMl ? '${item.name} നീക്കം ചെയ്യണോ?' : 'Delete ${item.name}?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(isMl ? 'ഇല്ല' : 'Cancel')),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: Text(isMl ? 'നീക്കം ചെയ്യുക' : 'Delete'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, color: Colors.deepOrange),
+                        tooltip: isMl ? 'എഡിറ്റ് ചെയ്യുക' : 'Edit',
+                        onPressed: () => _showAddOrEditExpenseTypeDialog(context, vm, isMl, itemToEdit: item),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                        tooltip: isMl ? 'നീക്കം ചെയ്യുക' : 'Delete',
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              title: Text(isMl ? 'തീർച്ചയാണോ?' : 'Confirm Delete'),
+                              content: Text(isMl ? ' നീക്കം ചെയ്യണോ?' : 'Delete ?'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(isMl ? 'ഇല്ല' : 'Cancel')),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: Text(isMl ? 'നീക്കം ചെയ്യുക' : 'Delete'),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        await vm.deleteExpenseType(item.id);
-                      }
-                    },
+                          );
+                          if (confirm == true) {
+                            await vm.deleteExpenseType(item.id);
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );

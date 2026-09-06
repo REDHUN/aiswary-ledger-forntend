@@ -1,11 +1,13 @@
 class ApiEndpoints {
   //static const String baseUrl = "http://localhost:8080/api/v1";
-  // static const String baseUrl = "http://192.168.1.6:8080/api/v1";
-  static const String baseUrl =
-      "https://aiswary-ledger-backend-177358050271.asia-south1.run.app/api/v1";
+  static const String baseUrl = "http://192.168.1.6:8080/api/v1";
+  // static const String baseUrl =
+  //     "https://aiswary-ledger-backend-177358050271.asia-south1.run.app/api/v1";
 
   // Auth
   static const String login = "/auth/login";
+  static const String refresh = "/auth/refresh";
+  static const String logout = "/auth/logout";
 
   // FCM Tokens & Notifications
   static const String fcmTokens = "/fcm-tokens";
@@ -44,8 +46,11 @@ class ApiEndpoints {
   static const String specialLoanTypes = "/settings/special-loan-types";
   static const String surplusAmount = "/settings/surplus-amount";
   static const String expenseTypes = "/settings/expense-types";
+  static String expenseTypeDetails(int id) => "/settings/expense-types/$id";
   static const String groupProfits = "/group-profits";
+  static String groupProfitDetails(int id) => "/group-profits/$id";
   static const String groupExpenses = "/expenses";
+  static String groupExpenseDetails(int id) => "/expenses/$id";
   static const String groups = "/groups";
   static const String groupLoans = "/groups/loans";
   static const String issueGroupLoan = "/groups/issue-loan";

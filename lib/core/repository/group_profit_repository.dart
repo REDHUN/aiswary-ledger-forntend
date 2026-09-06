@@ -45,4 +45,39 @@ class GroupProfitRepository {
     );
     return GroupProfitModel.fromJson(response['data']);
   }
+
+  Future<GroupProfitModel> updateGroupProfit({
+    required int id,
+    required String title,
+    required double amount,
+    required String profitDate,
+    String? description,
+    int? meetingId,
+  }) async {
+    final body = <String, dynamic>{
+      'title': title,
+      'amount': amount,
+      'profitDate': profitDate,
+    };
+    if (description != null && description.isNotEmpty) {
+      body['description'] = description;
+    }
+    if (meetingId != null) {
+      body['meetingId'] = meetingId;
+    }
+
+    final response = await _apiClient.request(
+      path: ApiEndpoints.groupProfitDetails(id),
+      method: RequestType.put,
+      body: body,
+    );
+    return GroupProfitModel.fromJson(response['data']);
+  }
+
+  Future<void> deleteGroupProfit(int id) async {
+    await _apiClient.request(
+      path: ApiEndpoints.groupProfitDetails(id),
+      method: RequestType.delete,
+    );
+  }
 }

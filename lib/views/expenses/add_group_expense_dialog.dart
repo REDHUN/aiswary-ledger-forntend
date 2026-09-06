@@ -1,18 +1,24 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/common/app_formatters.dart';
 import '../../core/model/expense_type_model.dart';
+import '../../core/model/group_expense_model.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../viewmodel/expense_viewmodel.dart';
 import '../../viewmodel/dashboard_viewmodel.dart';
-import '../../viewmodel/reports_viewmodel.dart';
 
 class AddGroupExpenseDialog extends StatefulWidget {
   final int? preselectedMeetingId;
-  const AddGroupExpenseDialog({super.key, this.preselectedMeetingId});
+  final GroupExpenseModel? expenseToEdit;
+
+  const AddGroupExpenseDialog({
+    super.key,
+    this.preselectedMeetingId,
+    this.expenseToEdit,
+  });
 
   @override
   State<AddGroupExpenseDialog> createState() => _AddGroupExpenseDialogState();
@@ -27,11 +33,30 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
   DateTime _selectedDate = DateTime.now();
   bool _isSubmitting = false;
 
+  bool get _isEditing => widget.expenseToEdit != null;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ExpenseViewModel>().fetchExpenseTypes();
+    if (_isEditing) {
+      _amountController.text = widget.expenseToEdit!.amount.toString();
+      _notesController.text = widget.expenseToEdit!.description ?? '';
+      final parsed = DateTime.tryParse(widget.expenseToEdit!.expenseDate);
+      if (parsed != null) {
+        _selectedDate = parsed;
+      }
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final vm = context.read<ExpenseViewModel>();
+      await vm.fetchExpenseTypes();
+      if (_isEditing && mounted && vm.expenseTypes.isNotEmpty) {
+        final matches = vm.expenseTypes.where((t) => t.id == widget.expenseToEdit!.expenseTypeId);
+        if (matches.isNotEmpty) {
+          setState(() {
+            _selectedExpenseType = matches.first;
+          });
+        }
+      }
     });
   }
 
@@ -75,7 +100,7 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
           autofocus: true,
           decoration: InputDecoration(
             hintText: isMl
-                ? 'തരം പേര് (ഉദാ: റഫ്രഷ്‌മെന്റ്)'
+                ? 'തരം പേര് (ഉദാ: റഫ്രഷ്മെന്റ്)'
                 : 'Type Name (e.g. Refreshment)',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
@@ -132,30 +157,46 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
     final amount = double.parse(_amountController.text.trim());
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
-    final success = await vm.createGroupExpense(
-      expenseTypeId: _selectedExpenseType!.id,
-      amount: amount,
-      expenseDate: dateStr,
-      description: _notesController.text.trim().isNotEmpty
-          ? _notesController.text.trim()
-          : null,
-      meetingId: widget.preselectedMeetingId,
-    );
+    final bool success;
+    if (_isEditing) {
+      success = await vm.updateGroupExpense(
+        id: widget.expenseToEdit!.id,
+        expenseTypeId: _selectedExpenseType!.id,
+        amount: amount,
+        expenseDate: dateStr,
+        description: _notesController.text.trim().isNotEmpty
+            ? _notesController.text.trim()
+            : null,
+        meetingId: widget.expenseToEdit!.meetingId ?? widget.preselectedMeetingId,
+      );
+    } else {
+      success = await vm.createGroupExpense(
+        expenseTypeId: _selectedExpenseType!.id,
+        amount: amount,
+        expenseDate: dateStr,
+        description: _notesController.text.trim().isNotEmpty
+            ? _notesController.text.trim()
+            : null,
+        meetingId: widget.preselectedMeetingId,
+      );
+    }
+
+    setState(() => _isSubmitting = false);
 
     if (mounted) {
-      setState(() => _isSubmitting = false);
       if (success) {
-        context.read<DashboardViewModel>().fetchDashboardSummary();
-        context.read<ReportsViewModel>().fetchAllReports();
-
         final l10n = AppLocalizations.of(context);
         final isMl = l10n.locale.languageCode == 'ml';
+        try {
+          context.read<DashboardViewModel>().fetchDashboardSummary();
+        } catch (_) {}
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isMl
-                  ? 'ചെലവ് വിജയകരമായി രേഖപ്പെടുത്തി!'
-                  : 'Expense recorded successfully!',
+              _isEditing
+                  ? (isMl ? 'ചെലവ് വിജയകരമായി പുതുക്കി' : 'Expense updated successfully')
+                  : (isMl ? 'ചെലവ് വിജയകരമായി രേഖപ്പെടുത്തി' : 'Expense recorded successfully'),
             ),
             backgroundColor: AppColors.success,
           ),
@@ -167,8 +208,8 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
         final err =
             vm.loadState.message ??
             (isMl
-                ? 'ചെലവ് രേഖപ്പെടുത്താൻ കഴിഞ്ഞില്ല'
-                : 'Failed to record expense');
+                ? (_isEditing ? 'ചെലവ് പുതുക്കാൻ കഴിഞ്ഞില്ല' : 'ചെലവ് രേഖപ്പെടുത്താൻ കഴിഞ്ഞില്ല')
+                : (_isEditing ? 'Failed to update expense' : 'Failed to record expense'));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(err), backgroundColor: AppColors.error),
         );
@@ -198,9 +239,9 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
                   children: [
                     Expanded(
                       child: Text(
-                        isMl
-                            ? 'ഗ്രൂപ്പ് ചെലവ് ചേർക്കുക'
-                            : 'Record Group Expense',
+                        _isEditing
+                            ? (isMl ? 'ചെലവ് മാറ്റുക' : 'Edit Group Expense')
+                            : (isMl ? 'ഗ്രൂപ്പ് ചെലവ് ചേർക്കുക' : 'Record Group Expense'),
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -225,7 +266,7 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
                         builder: (context, vm, _) {
                           final types = vm.expenseTypes;
                           return DropdownButtonFormField<ExpenseTypeModel>(
-                            initialValue: _selectedExpenseType,
+                            value: _selectedExpenseType,
                             decoration: InputDecoration(
                               labelText: isMl ? 'ചെലവ് തരം' : 'Expense Type',
                               border: OutlineInputBorder(
@@ -257,6 +298,14 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
                         },
                       ),
                     ),
+                    if (!_isEditing) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () => _showAddExpenseTypeDialog(context),
+                        icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
+                        tooltip: isMl ? 'പുതിയ തരം' : 'New Type',
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -275,11 +324,13 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
                     prefixIcon: const Icon(Icons.currency_rupee_rounded),
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty)
+                    if (val == null || val.trim().isEmpty) {
                       return isMl ? 'തുക നൽകുക' : 'Enter amount';
+                    }
                     final v = double.tryParse(val.trim());
-                    if (v == null || v <= 0)
+                    if (v == null || v <= 0) {
                       return isMl ? 'സാധുവായ തുക നൽകുക' : 'Enter valid amount';
+                    }
                     return null;
                   },
                 ),
@@ -335,7 +386,9 @@ class _AddGroupExpenseDialogState extends State<AddGroupExpenseDialog> {
                     child: _isSubmitting
                         ? const CircularProgressIndicator(color: Colors.white)
                         : Text(
-                            isMl ? 'ചെലവ് രേഖപ്പെടുത്തുക' : 'Record Expense',
+                            _isEditing
+                                ? (isMl ? 'മാറ്റങ്ങൾ സേവ് ചെയ്യുക' : 'Update Expense')
+                                : (isMl ? 'ചെലവ് രേഖപ്പെടുത്തുക' : 'Record Expense'),
                             style: GoogleFonts.outfit(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,

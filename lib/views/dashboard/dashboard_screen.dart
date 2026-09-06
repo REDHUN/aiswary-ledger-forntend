@@ -1,4 +1,4 @@
-import '../profits/group_profits_screen.dart';
+﻿import '../profits/group_profits_screen.dart';
 import '../../core/common/app_formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -76,37 +76,6 @@ class DashboardScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const GroupsScreen(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.group_work_rounded, size: 16),
-                        label: Text(
-                          isMl ? 'ഗ്രൂപ്പ് വായ്പ' : 'Group Loan',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 1,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
                               builder: (_) => const MeetingRegisterBookScreen(),
                             ),
                           );
@@ -114,37 +83,6 @@ class DashboardScreen extends StatelessWidget {
                         icon: const Icon(Icons.menu_book_rounded, size: 16),
                         label: Text(
                           isMl ? 'രജിസ്റ്റർ ബുക്ക്' : 'Register Book',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF047857),
-                          foregroundColor: Colors.white,
-                          elevation: 1,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const GroupProfitsScreen(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.trending_up_rounded, size: 16),
-                        label: Text(
-                          isMl ? 'ലാഭങ്ങൾ' : 'Profits',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -182,6 +120,71 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF047857),
+                          foregroundColor: Colors.white,
+                          elevation: 1,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GroupProfitsScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.trending_up_rounded, size: 16),
+                        label: Text(
+                          isMl ? 'ലാഭങ്ങൾ' : 'Profits',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 1,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GroupsScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.group_work_rounded, size: 16),
+                        label: Text(
+                          isMl ? 'ഗ്രൂപ്പ് വായ്പ' : 'Group Loan',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(

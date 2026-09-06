@@ -279,7 +279,9 @@ class _IssueGroupLoanDialogState extends State<IssueGroupLoanDialog> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              isMl ? 'ആകെ: ₹${totalAmt.toStringAsFixed(2)}' : 'Total: ₹${totalAmt.toStringAsFixed(2)}',
+                                              isMl
+                                                  ? 'ആകെ: ₹${totalAmt % 1 == 0 ? totalAmt.toInt() : totalAmt.toStringAsFixed(2)}'
+                                                  : 'Total: ₹${totalAmt % 1 == 0 ? totalAmt.toInt() : totalAmt.toStringAsFixed(2)}',
                                               style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textSecondary),
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -299,7 +301,7 @@ class _IssueGroupLoanDialogState extends State<IssueGroupLoanDialog> {
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          '₹${perMemberAmt.toStringAsFixed(2)} ${isMl ? "ഒരാൾക്ക്" : "each"}',
+                                          '₹${perMemberAmt.toInt()} ${isMl ? "ഒരാൾക്ക്" : "each"}',
                                           style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                                         ),
                                       ),
